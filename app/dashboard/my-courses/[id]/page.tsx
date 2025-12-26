@@ -97,7 +97,7 @@ function LessonsTab({ openModal, setOpenModal }: { openModal: boolean, setOpenMo
             {[1, 2, 3].map((i) => {
                 const topicName = i === 1 ? "Algorithmic Complexity" : i === 2 ? "Big O Notation" : "Sorting Algorithms";
                 return (
-                    <div key={i} className="bg-white px-3 py-4 rounded-[10px] border border-slate-100 flex items-center justify-between hover:border-[#fdb813] transition-colors cursor-pointer group">
+                    <div key={i} className="bg-white px-3 py-4 rounded-[10px] border border-slate-300 shadow-xs flex items-center justify-between hover:border-[#fdb813] transition-colors cursor-pointer group">
                         <div className="flex items-center gap-4">
                             <div className="bg-blue-50 p-3 rounded-lg text-blue-600 transition-colors">
                                 <BookText size={20} />
@@ -132,16 +132,23 @@ function LessonsTab({ openModal, setOpenModal }: { openModal: boolean, setOpenMo
 }
 
 function AssistantPreview() {
+    const [openModal, setOpenModal] = useState(false);
     return (
         <div className="bg-slate-900 rounded-3xl p-8 text-center text-white border-4 border-slate-800">
             <Sparkles size={48} className="text-[#fdb813] mx-auto mb-6" />
             <h3 className="text-xl font-black mb-2 tracking-tight text-white">Need Contextual Help?</h3>
             <p className="text-slate-400 text-sm max-w-md mx-auto mb-8 font-medium leading-relaxed">
-                My Intelligent Assistant can help you explain difficult concepts from this course&apos;s specific lecture notes.
+                Our Intelligent Assistant can help you explain difficult concepts from this course&apos;s specific lecture notes.
             </p>
-            <button className="px-8 py-3 bg-[#fdb813] text-[#002147] rounded-xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
-                <MessageCircle size={18} /> Launch Course Tutor
+            <button onClick={() => setOpenModal(true)} className="px-8 py-3 bg-[#fdb813] text-[#002147] rounded-xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
+                <MessageCircle size={18} /> Launch Study Assistant
             </button>
+
+            <StudyModal
+                initialCourseCode='CSC 401'
+                openModal={openModal}
+                setOpenModal={setOpenModal}
+            />
         </div>
     );
 }

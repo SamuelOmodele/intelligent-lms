@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '../ui/dialog';
-import { FileText, Send, Sparkles, X, ChevronRight, BookOpen, GraduationCap} from 'lucide-react';
+import { FileText, Send, Sparkles, X, ChevronRight, BookOpen, GraduationCap } from 'lucide-react';
 
 // React PDF Viewer Imports
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { DialogOverlay } from '@radix-ui/react-dialog';
 
 
 interface StudyModalProps {
@@ -65,6 +66,10 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
 
     return (
         <Dialog open={openModal} onOpenChange={setOpenModal}>
+            <DialogOverlay
+                className="fixed inset-0 z-50 bg-black/65 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0"
+            />
+
             <DialogContent className={`${step === 'STUDY' ? 'max-w-[100vw]! w-screen h-screen' : 'max-w-md'} p-0 gap-0 border-none outline-none overflow-hidden transition-all duration-300`}>
 
                 {/* STEP 1: SELECT COURSE */}
@@ -88,7 +93,7 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
                 {/* STEP 2: SELECT LESSON */}
                 {step === 'SELECT_LESSON' && (
                     <div className="bg-white p-6 rounded-3xl">
-                        <DialogTitle className="text-2xl font-black text-[#002147] mb-1">Select Topic</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-[#002147] mb-1">Select Topic</DialogTitle>
                         <p className="text-sm text-slate-400 font-bold uppercase mb-4 tracking-wider">{selectedCourse}</p>
                         <div className="space-y-3">
                             {(selectedCourse ? LESSONS[selectedCourse] : []).map((topic) => (
@@ -101,7 +106,7 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
                                 </button>
                             ))}
                         </div>
-                        <button onClick={() => setStep('SELECT_COURSE')} className="mt-4 w-full text-xs font-black text-slate-400 uppercase hover:text-[#002147]">Back</button>
+                        {/* <button onClick={() => setStep('SELECT_COURSE')} className="mt-4 w-full text-xs font-black text-slate-400 uppercase hover:text-[#002147]">Back</button> */}
                     </div>
                 )}
 
