@@ -17,17 +17,16 @@ export default function MyCourses() {
         <p className="text-slate-500 text-sm">Access your active learning modules for the current semester.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {MY_COURSES.map((course, index) => (
           <CourseCard course={course} key={index}>
             <Link
               href={`/dashboard/my-courses/${course.id}`}
               className="w-full py-3 bg-[#002147] text-white rounded-lg font-bold text-center text-sm hover:bg-[#003366] transition-all flex items-center justify-center gap-2"
             >
-              Open Classroom <ArrowRight size={16} />
+              Open Course <ArrowRight size={16} />
             </Link>
           </CourseCard>
-          
         ))
         }
       </div >

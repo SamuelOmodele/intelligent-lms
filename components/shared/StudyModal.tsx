@@ -1,7 +1,12 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '../ui/dialog';
-import { Bot, FileText, Send, Sparkles, X, ChevronRight, BookOpen, GraduationCap } from 'lucide-react';
+import { FileText, Send, Sparkles, X, ChevronRight, BookOpen, GraduationCap} from 'lucide-react';
+
+// React PDF Viewer Imports
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+
 
 interface StudyModalProps {
     openModal: boolean;
@@ -27,6 +32,7 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
     const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
     const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 
+
     // Sync state when modal opens or props change
     useEffect(() => {
         if (openModal) {
@@ -44,10 +50,23 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
         }
     }, [openModal, initialCourseCode, initialLessonTopic]);
 
+    const [messages, setMessages] = useState([
+        { role: 'assistant', content: `Hello! I've loaded the materials for **${selectedLesson}**. What part should we dive into first?` },
+        { role: 'user', content: "Can you explain the difference between O(n) and O(n log n) in simple terms?" },
+        { role: 'assistant', content: "Think of O(n) like reading a book page by page—it takes longer as the book gets bigger. O(n log n) is more like sorting that book using a smart strategy (like Merge Sort). It's slightly more complex than linear, but way faster than checking every page against every other page!" }
+    ]);
+    const [inputValue, setInputValue] = useState('');
+
+    const handleSend = () => {
+        if (!inputValue.trim()) return;
+        setMessages([...messages, { role: 'user', content: inputValue }]);
+        setInputValue('');
+    };
+
     return (
         <Dialog open={openModal} onOpenChange={setOpenModal}>
             <DialogContent className={`${step === 'STUDY' ? 'max-w-[100vw]! w-screen h-screen' : 'max-w-md'} p-0 gap-0 border-none outline-none overflow-hidden transition-all duration-300`}>
-                
+
                 {/* STEP 1: SELECT COURSE */}
                 {step === 'SELECT_COURSE' && (
                     <div className="bg-white p-6 rounded-3xl">
@@ -97,10 +116,10 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
                                     <FileText className="text-red-600" size={18} />
                                     <div>
                                         <h2 className="font-bold text-[#002147] text-sm">{selectedLesson}</h2>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{selectedCourse}</p>
+                                        <p className="text-[12px] font-medium text-slate-400 uppercase ">{selectedCourse}</p>
                                     </div>
                                 </div>
-                                <DialogClose className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                <DialogClose className="flex items-center text-[12px] gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-full font-bold cursor-pointer uppercase tracking-wider">
                                     Exit <X size={16} />
                                 </DialogClose>
                             </div>
@@ -109,13 +128,56 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
                             </div>
                         </div>
                         {/* Right Side: AI Chat */}
-                        <div className="flex-1 bg-white flex flex-col shadow-xl z-10">
-                            <div className="p-4 border-b bg-slate-50 flex items-center gap-3">
-                                <div className="bg-[#002147] p-2 rounded-lg"><Sparkles size={18} className="text-[#fdb813]" /></div>
-                                <p className="font-black text-sm text-[#002147]">Study Assistant</p>
+                        <div className="flex-1 bg-white flex flex-col shadow-xl z-10 border-l border-slate-200">
+                            <div className="p-4 border-b bg-slate-50 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-[#002147] p-2 rounded-lg">
+                                        <Sparkles size={18} className="text-[#fdb813]" />
+                                    </div>
+                                    <p className="font-black text-sm text-[#002147]">Study Assistant</p>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">AI Online</span>
+                                </div>
                             </div>
-                            <div className="flex-1 p-4"><div className="bg-slate-100 p-4 rounded-2xl text-sm leading-relaxed text-slate-700">How can I help you understand <b>{selectedLesson}</b>?</div></div>
-                            <div className="p-4 border-t"><input type="text" placeholder="Ask anything..." className="w-full p-4 bg-slate-100 rounded-xl text-sm outline-none border-2 border-transparent focus:border-[#fdb813]" /></div>
+
+                            {/* Chat Messages Area */}
+                            <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                                {messages.map((msg, i) => (
+                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user'
+                                            ? 'bg-[#002147] text-white rounded-tr-none'
+                                            : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
+                                            }`}>
+                                            {msg.content}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Input Area */}
+                            <div className="p-4 bg-white border-t">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="text"
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                                        placeholder="Ask a question about this lesson..."
+                                        className="w-full p-4 pr-12 bg-slate-100 rounded-2xl text-sm outline-none border-2 border-transparent focus:border-[#fdb813] transition-all"
+                                    />
+                                    <button
+                                        onClick={handleSend}
+                                        className="absolute right-2 p-2 bg-[#002147] text-[#fdb813] rounded-xl hover:scale-105 active:scale-95 transition-all"
+                                    >
+                                        <Send size={18} />
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-center text-slate-400 mt-2 font-medium">
+                                    AI can make mistakes. Verify important formulas.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -123,5 +185,7 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
         </Dialog>
     );
 };
+
+
 
 export default StudyModal;

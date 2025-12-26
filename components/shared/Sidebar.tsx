@@ -49,7 +49,6 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }: TProps) => {
         { name: 'My Courses', icon: <BookMarked size={20} />, href: '/dashboard/my-courses' },
         { name: 'Courses', icon: <Search size={20} />, href: '/dashboard/all-courses' },
         { name: 'Assignments', icon: <FileEdit size={20} />, href: '/dashboard/assignments' },
-        // { name: 'Intelligent Assistant', icon: <Sparkles size={20} className="text-[#fdb813]" />, href: '/dashboard/assistant' },
     ];
 
     return (
@@ -61,24 +60,35 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }: TProps) => {
                         <GraduationCap className="h-6 w-6 text-[#002147]" />
                     </div>
                     <div>
-                        <span className="font-bold text-lg tracking-tight -mb-1 block leading-none">iLMS</span>
+                        <span className="font-bold text-lg tracking-tight -mb-1 block leading-none">PremierLMS</span>
                         <small className='text-blue-300/60 text-[11px] font-bold uppercase tracking-wider'>University of Ibadan</small>
                     </div>
                 </div>
 
                 {/* Navigation */}
                 <nav className="flex-1 p-4 space-y-2 mt-4">
-                    {menuItems.map((item) => (
-                        <Link
-                            key={item.name}
-                            href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm font-bold ${pathname === item.href ? 'bg-[#fdb813] text-[#002147]' : 'text-blue-100 hover:bg-blue-900/50'
-                                }`}
-                        >
-                            {item.icon}
-                            {item.name}
-                        </Link>
-                    ))}
+                    {menuItems.map((item) => {
+                        // Check if current path matches item.href
+                        // For '/dashboard', we want an exact match so it doesn't highlight for every sub-page
+                        // For others, we check if it starts with the href
+                        const isActive = item.href === '/dashboard'
+                            ? pathname === '/dashboard'
+                            : pathname.startsWith(item.href);
+
+                        return (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm font-bold ${isActive
+                                        ? 'bg-[#fdb813] text-[#002147]'
+                                        : 'text-blue-100 hover:bg-blue-900/50'
+                                    }`}
+                            >
+                                {item.icon}
+                                {item.name}
+                            </Link>
+                        );
+                    })}
                     <Link
                         onClick={() => setOpenModal(true)}
                         href={''}
