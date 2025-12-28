@@ -125,7 +125,7 @@ function LessonsTab({ setOpenStudyModal, openStudyModal }: any) {
             </div>
 
             {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white px-4 py-5 rounded-2xl border border-slate-200 flex items-center justify-between hover:border-[#fdb813] transition-all group">
+                <div key={i} className="bg-white px-4 py-5 rounded-[10px] border border-slate-200 flex items-center justify-between hover:border-[#fdb813] transition-all group">
                     <div className="flex items-center gap-4">
                         <div className="bg-blue-50 p-3 rounded-xl text-blue-600"><BookText size={20} /></div>
                         <div>
@@ -179,7 +179,7 @@ function AssignmentsTab() {
                         </DialogTitle>
                     </DialogHeader>
                     
-                    <div className="space-y-4 mt-4">
+                    <div className="space-y-4">
                         <div>
                             <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Title</label>
                             <input type="text" className="w-full mt-1 p-3 border rounded-xl text-sm outline-none focus:ring-2 ring-blue-50" placeholder="Assignment Title" />
@@ -209,7 +209,7 @@ function AssignmentsTab() {
             </Dialog>
 
             {/* Assignment Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 flex justify-between items-center group hover:border-[#fdb813] transition-all">
+            <div className="bg-white rounded-[10px] border border-slate-200 p-6 flex justify-between items-center group hover:border-[#fdb813] transition-all">
                 <div>
                     <span className="text-[10px] font-black px-2 py-1 rounded-lg uppercase bg-amber-100 text-amber-700 inline-block mb-2">Pending</span>
                     <h3 className="text-lg font-black text-[#002147]">Big O Analysis Exercise</h3>

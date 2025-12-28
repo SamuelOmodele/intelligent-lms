@@ -36,14 +36,16 @@ export default function AdminDashboard() {
     return (
         <div className=''>
             {/* STAT CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
                 {STATS.map((stat, i) => (
-                    <div key={i} className="bg-white p-4 rounded-[10px] border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                    <div key={i} className="bg-white grid grid-cols-[40px_auto] gap-3 p-4 rounded-[10px] border shadow-xs border-slate-300 transition-all">
                         <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-2xl flex items-center justify-center mb-4`}>
                             <stat.icon size={18} />
                         </div>
-                        <p className="text-slate-500 text-sm font-bold uppercase tracking-wider">{stat.label}</p>
-                        <p className="text-lg font-black text-[#002147] mt-1">{stat.value}</p>
+                        <div>
+                            <p className="text-slate-500 text-[13px] font-bold uppercase tracking-wider">{stat.label}</p>
+                            <p className="text-xl font-black text-[#002147] mt-1">{stat.value}</p>
+                        </div>
                     </div>
                 ))}
             </div>
