@@ -6,7 +6,6 @@ import {
   ChevronRight, 
   AlertCircle, 
   CheckCircle2,
-  Filter
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -45,7 +44,7 @@ export default function GeneralAssignmentsPage() {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-black text-[#002147]">Assignments</h1>
           <p className="text-slate-500 font-medium">Keep track of your coursework across all enrolled modules.</p>
@@ -71,7 +70,7 @@ export default function GeneralAssignmentsPage() {
       <div className="space-y-4">
         {filteredData.length > 0 ? (
           filteredData.map((asgn) => (
-            <div key={asgn.id} className="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#fdb813] transition-all hover:shadow-md">
+            <div key={asgn.id} className="group bg-white border border-slate-200 rounded-lg p-5 hover:border-[#fdb813] transition-all hover:shadow-md">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 
                 <div className="flex items-start gap-4">
@@ -102,7 +101,7 @@ export default function GeneralAssignmentsPage() {
                   {filter === 'Pending' ? (
                     <Link 
                       href={`/dashboard/my-courses/${asgn.courseCode.toLowerCase().replace(' ', '')}`}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-[#002147] text-white rounded-xl font-black text-xs uppercase hover:bg-[#003366] transition-all shadow-lg shadow-blue-900/10"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-[#002147] text-white rounded-sm font-black text-xs uppercase hover:bg-[#003366] transition-allshadow-blue-900/10"
                     >
                       Open Course <ChevronRight size={16} />
                     </Link>

@@ -10,7 +10,7 @@ const CourseCard = ({ course, children }: TProps) => {
 
 
     return (
-        <div key={course.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
+        <div key={course.id} className="bg-white rounded-lg border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col">
             {/* Course Placeholder Image */}
             <div className={`${course.color} h-32 flex items-center justify-center relative overflow-hidden`}>
                 <span className="text-white/20 font-black text-6xl absolute -right-4 -bottom-4 rotate-12">{course.dept}</span>

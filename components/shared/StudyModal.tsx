@@ -67,7 +67,7 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
     return (
         <Dialog open={openModal} onOpenChange={setOpenModal}>
             <DialogOverlay
-                className="fixed inset-0 z-50 bg-black/65 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0"
+                className="fixed inset-0 z-50 bg-black/60 "
             />
 
             <DialogContent className={`${step === 'STUDY' ? 'max-w-[100vw]! w-screen h-screen' : 'max-w-md'} p-0 gap-0 border-none outline-none overflow-hidden transition-all duration-300`}>
@@ -94,7 +94,7 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, initialLessonT
                 {step === 'SELECT_LESSON' && (
                     <div className="bg-white p-6 rounded-3xl">
                         <DialogTitle className="text-2xl font-bold text-[#002147] mb-1">Select Topic</DialogTitle>
-                        <p className="text-sm text-slate-400 font-bold uppercase mb-4 tracking-wider">{selectedCourse}</p>
+                        <p className="text-sm text-slate-400 font-bold uppercase mb-4 tracking-wider">{selectedCourse} - {COURSES.find(course => course.code === selectedCourse)?.name}</p>
                         <div className="space-y-3">
                             {(selectedCourse ? LESSONS[selectedCourse] : []).map((topic) => (
                                 <button key={topic} onClick={() => { setSelectedLesson(topic); setStep('STUDY'); }} className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-100 hover:border-[#fdb813] hover:bg-amber-50 transition-all group text-left">
