@@ -1,8 +1,8 @@
 "use client";
-import React from 'react';
-import { 
-  LogOut, 
-  AlertCircle, 
+import {
+  LogOut,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import {
   Dialog,
@@ -13,16 +13,17 @@ import {
 } from "@/components/ui/dialog";
 
 interface LogoutModalProps {
+  isLoggingOut: boolean;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-export default function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
+export default function LogoutModal({ isLoggingOut, isOpen, onClose, onConfirm }: LogoutModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] border-none p-0 overflow-hidden shadow-2xl">
-        
+
         <div className="p-8">
           {/* Icon Header */}
           <div className="flex justify-center mb-6">
@@ -46,9 +47,18 @@ export default function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalP
               onClick={onConfirm}
               className="w-full bg-[#002147] text-white font-black py-3 rounded-[5px] uppercase text-xs tracking-widest hover:bg-blue-900 transition-all active:scale-[0.98]"
             >
-              Yes, Sign Me Out
+              {isLoggingOut ? (
+                <div className='flex items-center justify-center gap-2'>
+                  <Loader2 size={16} className="animate-spin" />
+                  Signing out...
+                </div>
+              ) : (
+                <>
+                  Yes, Log me out
+                </>
+              )}
             </button>
-            
+
             <button
               onClick={onClose}
               className="w-full bg-white text-slate-400 font-black py-3 rounded-[5px] uppercase text-xs tracking-widest hover:text-slate-600 hover:bg-slate-50 transition-all border border-slate-300"

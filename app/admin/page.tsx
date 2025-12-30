@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { BookOpen, Building2, Plus, UserCircle, Users } from "lucide-react";
+import CreateCourseModal from "@/components/modals/CreateCourseModal";
+import {
+    BookOpen,
+    Building2,
+    Plus,
+    UserCircle,
+    Users
+} from "lucide-react";
 
 export default function AdminDashboard() {
     return (
@@ -12,33 +18,12 @@ export default function AdminDashboard() {
                         Access institutional data, monitor students, and manage system-wide resources.
                     </p>
                 </div>
-                
-                {/* GLOBAL COURSE CREATION */}
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <button className="bg-[#fdb813] cursor-pointer text-[#002147] px-6 py-3 rounded-[5px] font-black text-xs uppercase flex items-center gap-2 hover:scale-105 transition-all shadow-xs">
-                            <Plus size={18} /> Create New Course
-                        </button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
-                            <DialogTitle className="font-black text-[#002147]">Global Course Creation</DialogTitle>
-                        </DialogHeader>
-                        <form className="space-y-4 mt-4">
-                            <input className="w-full p-3 border rounded-xl" placeholder="Course Name (e.g. Intro to UI/UX)" />
-                            <div className="flex gap-4">
-                                <input className="flex-1 p-3 border rounded-xl" placeholder="Course Code" />
-                                <select className="flex-1 p-3 border rounded-xl text-slate-500">
-                                    <option>Select Lecturer</option>
-                                    <option>Prof. Adeboye</option>
-                                    <option>Dr. Sarah Idris</option>
-                                </select>
-                            </div>
-                            <textarea className="w-full p-3 border rounded-xl h-24" placeholder="Course Description" />
-                            <button className="w-full bg-[#002147] text-white py-4 rounded-xl font-black uppercase text-xs">Register Course</button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+
+                <CreateCourseModal>
+                    <button className="bg-[#fdb813] cursor-pointer text-[#002147] px-6 py-3 rounded-[5px] font-black text-xs uppercase flex items-center gap-2 hover:scale-105 transition-all shadow-xs">
+                        <Plus size={18} /> Create New Course
+                    </button>
+                </CreateCourseModal>
             </div>
 
             {/* QUICK STATS */}

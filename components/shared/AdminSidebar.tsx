@@ -12,9 +12,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import LogoutModal from './AdminLogoutModal';
+import useLogout from '@/app/lib/useLogout';
 
 const AdminSidebar = () => {
     const pathname = usePathname();
+
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const { handleLogout } = useLogout({ setIsLoggingOut });
 
     const menuItems = [
         { name: 'Overview', icon: <LayoutDashboard size={18} />, path: '/admin' },
@@ -59,12 +63,10 @@ const AdminSidebar = () => {
                 </button>
             </div>
             <LogoutModal
+                isLoggingOut={isLoggingOut}
                 isOpen={showLogout}
                 onClose={() => setShowLogout(false)}
-                onConfirm={() => {
-                    console.log("Logging out...");
-                    // window.location.href = "/login";
-                }}
+                onConfirm={handleLogout}
             />
         </aside>
     );

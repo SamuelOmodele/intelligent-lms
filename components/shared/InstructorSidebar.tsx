@@ -6,7 +6,8 @@ import {
     LayoutDashboard,
     LogOut,
     Users,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -17,17 +18,15 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import useLogout from '@/app/lib/useLogout';
 
 const InstructorSidebar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
-    const handleLogout = () => {
-        // Add your logout logic here (e.g., clearing cookies/local storage)
-        console.log("Logging out...");
-        router.push('/login');
-    };
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const { handleLogout } = useLogout({ setIsLoggingOut });
 
     return (
         <>
@@ -64,10 +63,10 @@ const InstructorSidebar = () => {
                         <LogOut size={18} /> Logout
                     </button>
                 </div>
-            </aside>
+            </aside >
 
             {/* Logout Confirmation Modal */}
-            <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>
+            <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen} >
                 <DialogContent className="sm:max-w-[500px] p-8">
                     <div className="flex flex-col items-center text-center">
                         <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
@@ -86,20 +85,29 @@ const InstructorSidebar = () => {
                         <div className="flex w-full gap-3 mt-8">
                             <button
                                 onClick={handleLogout}
-                                className="w-full py-3 bg-red-500 text-white rounded-[12px] font-black uppercase hover:bg-red-400 transition-all shadow-red-100 text-[13px]"
+                                className="w-full py-3 bg-red-500 text-white rounded-[13px] font-semibold uppercase hover:bg-red-400 transition-all shadow-red-100 text-[13px]"
                             >
-                                Yes, Sign Me Out
+                                {isLoggingOut ? (
+                                    <div className='flex items-center justify-center gap-2'>
+                                        <Loader2 size={16} className="animate-spin" />
+                                        Signing out...
+                                    </div>
+                                ) : (
+                                    <>
+                                        Yes, Log me out
+                                    </>
+                                )}
                             </button>
                             <button
                                 onClick={() => setIsLogoutOpen(false)}
-                                className="w-full py-3 bg-slate-100 text-[#002147] rounded-[12px] font-black uppercase hover:bg-slate-200 transition-all text-[13px]"
+                                className="w-full py-3 bg-slate-100 text-[#002147] rounded-[13px] font-black uppercase hover:bg-slate-200 transition-all text-[13px]"
                             >
                                 Cancel
                             </button>
                         </div>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
         </>
     )
 }

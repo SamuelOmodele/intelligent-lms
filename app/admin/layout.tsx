@@ -19,10 +19,6 @@ export default function DashboardLayout({
 
         {/* TOP NAVIGATION BAR (Universal for Admin) */}
         <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
-          {/* <div>
-            <span className="text-xs font-black uppercase text-slate-400 tracking-widest">Admin Portal</span>
-            <h2 className="text-sm font-bold text-[#002147]"></h2>
-          </div> */}
           <div>
             <h1 className="text-xl font-black text-[#002147]">Administrator Control Center</h1>
             <p className="text-slate-500 font-medium">Welcome back, Mr Adebayo</p>

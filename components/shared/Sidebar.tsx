@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
     BookMarked,
@@ -24,6 +24,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import StudyModal from './StudyModal';
+import useLogout from '@/app/lib/useLogout';
 
 type TProps = {
     isSidebarOpen: boolean;
@@ -31,18 +32,12 @@ type TProps = {
 }
 
 const Sidebar = ({ isSidebarOpen, setSidebarOpen }: TProps) => {
+
     const pathname = usePathname();
-    const router = useRouter();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const { handleLogout } = useLogout({ setIsLoggingOut });
     const [openModal, setOpenModal] = useState(false);
 
-    const handleLogout = () => {
-        setIsLoggingOut(true);
-        // Simulate a delay for the logout process
-        setTimeout(() => {
-            router.push('/login');
-        }, 1500);
-    };
 
     const menuItems = [
         { name: 'Dashboard', icon: <LayoutDashboard size={20} />, href: '/dashboard' },
@@ -80,8 +75,8 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }: TProps) => {
                                 key={item.name}
                                 href={item.href}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm font-bold ${isActive
-                                        ? 'bg-[#fdb813] text-[#002147]'
-                                        : 'text-blue-100 hover:bg-blue-900/50'
+                                    ? 'bg-[#fdb813] text-[#002147]'
+                                    : 'text-blue-100 hover:bg-blue-900/50'
                                     }`}
                             >
                                 {item.icon}

@@ -5,15 +5,16 @@ import {
   FileText,
   UserCheck,
   Library,
-  Globe,
   Bell,
-  ChevronRight,
   GraduationCap,
   Lock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+// import { useQuery } from 'convex/react';
+// import { api } from '@/convex/_generated/api';
 
 export default function UniversityLMS() {
+  // const tasks = useQuery(api.tasks.get);
 
   const router = useRouter();
   return (
@@ -76,6 +77,12 @@ export default function UniversityLMS() {
           </div>
         </div>
       </header>
+
+      {/* <div>
+        <main className="flex min-h-screen flex-col items-center justify-between p-24">
+          {tasks?.map(({ _id, text }) => <div key={_id}>{text}</div>)}
+        </main>
+      </div> */}
 
       {/* --- Key Modules Section --- */}
       <section className="py-24">
