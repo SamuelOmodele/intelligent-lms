@@ -2,9 +2,9 @@ import React from 'react'
 
 const InstructorNavbar = () => {
     return (
-        <div className="bg-white border border-slate-200 h-20 flex justify-between items-center p-3">
+        <div className="bg-white border border-slate-200 h-20 flex justify-between items-center py-3 px-7 pr-10">
             <div>
-                <h1 className="text-xl font-black text-[#002147]">Dashboard</h1>
+                <h1 className="text-xl font-black text-[#002147]">Instructor Dashboard</h1>
                 <p className="text-slate-500 font-medium">Welcome back, Prof. Adeyemi</p>
             </div>
             <div className="bg-white p-2 rounded-[5px] border border-slate-200 flex items-center gap-3 pr-5">

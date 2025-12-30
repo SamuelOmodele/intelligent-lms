@@ -12,8 +12,8 @@ export default function LoginPage() {
           <div className="inline-flex p-3 bg-white/10 rounded-full mb-4">
             <GraduationCap className="h-8 w-8 text-[#fdb813]" />
           </div>
-          <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Student Login</h2>
-          <p className="text-blue-200 text-xs mt-2 uppercase tracking-widest">University of Ibadan LMS</p>
+          <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Portal Login</h2>
+          <p className="text-blue-200 text-xs mt-2 tracking-widest">PremierLMS Platform</p>
         </div>
 
         {/* Form Section */}

@@ -37,7 +37,10 @@ const InstructorSidebar = () => {
                         <div className="bg-[#002147] p-1.5 rounded-lg text-[#fdb813]">
                             <GraduationCap size={24} />
                         </div>
-                        <span className="font-black text-xl text-[#002147] tracking-tight text-nowrap">PremierLMS</span>
+                        <div>
+                            <span className="font-black text-xl text-[#002147] tracking-tight">PremierLms</span>
+                            <p className='text-xs text-slate-500'>UNIVERSITY OF IBADAN</p>
+                        </div>
                     </div>
 
                     <nav className="space-y-1">
@@ -54,7 +57,7 @@ const InstructorSidebar = () => {
                 </div>
 
                 <div className="mt-auto p-6 border-t border-slate-100">
-                    <button 
+                    <button
                         onClick={() => setIsLogoutOpen(true)}
                         className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold text-sm transition-all"
                     >
@@ -70,7 +73,7 @@ const InstructorSidebar = () => {
                         <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
                             <AlertCircle size={32} />
                         </div>
-                        
+
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-black text-[#002147] text-center">
                                 Sign Out
@@ -81,13 +84,13 @@ const InstructorSidebar = () => {
                         </DialogHeader>
 
                         <div className="flex w-full gap-3 mt-8">
-                            <button 
+                            <button
                                 onClick={handleLogout}
                                 className="w-full py-4 bg-red-500 text-white rounded-[12px] font-black text-xs uppercase hover:bg-red-400 transition-all shadow-red-100"
                             >
                                 Yes, Sign Me Out
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setIsLogoutOpen(false)}
                                 className="w-full py-4 bg-slate-100 text-[#002147] rounded-[12px] font-black text-xs uppercase hover:bg-slate-200 transition-all"
                             >
