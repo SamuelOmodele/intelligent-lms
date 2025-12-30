@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import LogoutModal from './AdminLogoutModal';
 
 const AdminSidebar = () => {
     const pathname = usePathname();
@@ -21,6 +23,8 @@ const AdminSidebar = () => {
         { name: 'Students', icon: <Users size={18} />, path: '/admin/students' },
         { name: 'Departments', icon: <Building2 size={18} />, path: '/admin/departments' },
     ];
+
+    const [showLogout, setShowLogout] = useState(false);
 
     return (
         <aside className="w-64 bg-white border-r border-slate-200 flex flex-col fixed h-full z-50">
@@ -50,12 +54,22 @@ const AdminSidebar = () => {
             </div>
 
             <div className="mt-auto p-6 border-t border-slate-100">
-                <button className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold text-sm transition-all">
+                <button onClick={() => setShowLogout(true)} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold text-sm transition-all">
                     <LogOut size={18} /> Logout
                 </button>
             </div>
+            <LogoutModal
+                isOpen={showLogout}
+                onClose={() => setShowLogout(false)}
+                onConfirm={() => {
+                    console.log("Logging out...");
+                    // window.location.href = "/login";
+                }}
+            />
         </aside>
     );
 };
 
 export default AdminSidebar;
+
+

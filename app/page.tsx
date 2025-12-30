@@ -37,8 +37,8 @@ export default function UniversityLMS() {
               <GraduationCap className="h-8 w-8 text-[#fdb813]" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-[#002147] leading-none uppercase">UI-LMS</h1>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">Academic Excellence Portal</p>
+              <h1 className="text-xl font-black text-[#002147] leading-none uppercase">PremierLms</h1>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">University of Ibadan</p>
             </div>
           </div>
 

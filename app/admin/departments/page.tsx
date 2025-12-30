@@ -105,7 +105,7 @@ export default function AdminDepartmentsPage() {
       {/* Department Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {filteredDepts.map((dept) => (
-          <div key={dept.id} className="bg-white rounded-[10px] border border-slate-200 p-5 hover:shadow-xl hover:shadow-slate-200/50 transition-all group border-b-4 border-b-transparent hover:border-b-[#fdb813]">
+          <div key={dept.id} className="bg-white rounded-[10px] border border-slate-200 p-5 hover:shadow-xl hover:shadow-slate-200/50 transition-all ">
             <div className="flex justify-between items-start mb-6">
               <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-[#002147] group-hover:bg-[#002147] group-hover:text-white transition-colors">
                 <Building2 size={28} />
@@ -115,9 +115,6 @@ export default function AdminDepartmentsPage() {
                   <MoreVertical size={18} className="text-slate-400" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                  <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold p-3 cursor-pointer">
-                    <Settings2 size={16} /> Dept Settings
-                  </DropdownMenuItem>
                   <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold p-3 text-red-600 cursor-pointer">
                     <Trash2 size={16} /> Dissolve Unit
                   </DropdownMenuItem>

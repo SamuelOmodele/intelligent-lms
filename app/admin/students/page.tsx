@@ -56,9 +56,6 @@ export default function AdminStudentsPage() {
           <button className="flex items-center gap-2 bg-white border border-slate-200 text-[#002147] px-5 py-3 rounded-[5px] font-bold text-xs uppercase hover:bg-slate-50 transition-all shadow-sm">
             <Download size={16} /> Export Records
           </button>
-          <button className="flex items-center gap-2 bg-[#002147] text-white px-5 py-3 rounded-[5px] font-black text-xs uppercase hover:bg-blue-900 transition-all shadow-sm shadow-blue-900/10">
-            <CheckCircle2 size={16} /> Verify Matriculants
-          </button>
         </div>
       </div>
 
@@ -172,10 +169,7 @@ export default function AdminStudentsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1 shadow-xl border-slate-200">
                         <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold p-3 cursor-pointer">
-                          <Eye size={16} /> View Academic File
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold p-3 cursor-pointer">
-                          <GraduationCap size={16} /> Edit Level/Dept
+                          <GraduationCap size={16} /> Edit Profile
                         </DropdownMenuItem>
                         <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold p-3 text-red-600 cursor-pointer focus:bg-red-50 focus:text-red-600">
                           <UserX size={16} /> Suspend Access

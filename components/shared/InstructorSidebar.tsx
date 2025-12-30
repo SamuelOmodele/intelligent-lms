@@ -78,7 +78,7 @@ const InstructorSidebar = () => {
                             <DialogTitle className="text-2xl font-black text-[#002147] text-center">
                                 Sign Out
                             </DialogTitle>
-                            <DialogDescription className="text-slate-500 font-medium text-center pt-2">
+                            <DialogDescription className="text-slate-500 font-medium text-center pt-2 text-[16px]">
                                 Are you sure you want to log out? You will need to sign back in to manage your courses.
                             </DialogDescription>
                         </DialogHeader>
@@ -86,13 +86,13 @@ const InstructorSidebar = () => {
                         <div className="flex w-full gap-3 mt-8">
                             <button
                                 onClick={handleLogout}
-                                className="w-full py-4 bg-red-500 text-white rounded-[12px] font-black text-xs uppercase hover:bg-red-400 transition-all shadow-red-100"
+                                className="w-full py-3 bg-red-500 text-white rounded-[12px] font-black uppercase hover:bg-red-400 transition-all shadow-red-100 text-[13px]"
                             >
                                 Yes, Sign Me Out
                             </button>
                             <button
                                 onClick={() => setIsLogoutOpen(false)}
-                                className="w-full py-4 bg-slate-100 text-[#002147] rounded-[12px] font-black text-xs uppercase hover:bg-slate-200 transition-all"
+                                className="w-full py-3 bg-slate-100 text-[#002147] rounded-[12px] font-black uppercase hover:bg-slate-200 transition-all text-[13px]"
                             >
                                 Cancel
                             </button>
