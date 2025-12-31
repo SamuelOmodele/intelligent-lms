@@ -2,13 +2,14 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { User, Mail, Lock, Building2, GraduationCap, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, Building2, GraduationCap, Loader2, Layers } from 'lucide-react';
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 
+const LEVELS = ["100L", "200L", "300L", "400L", "500L", "600L", "700L"];
+
 export default function RegisterPage() {
-  // Use the manual mutation we created in convex/users.ts
   const registerUser = useMutation(api.users.register);
   const router = useRouter();
   
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [idNumber, setIdNumber] = useState(""); 
   const [department, setDepartment] = useState("Computer Science");
+  const [level, setLevel] = useState("100L"); // <--- New State
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,25 +30,22 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // Call our manual Convex mutation
-      const userId = await registerUser({
+      await registerUser({
         name,
         email,
         password,
         role: role === 'student' ? 'student' : 'lecturer',
         department,
-        // Map the single idNumber field to the correct schema field
-        ...(role === 'student' ? { matricNumber: idNumber } : { staffId: idNumber }),
+        // Map fields based on role
+        ...(role === 'student' 
+          ? { matricNumber: idNumber, level: level } 
+          : { staffId: idNumber }
+        ),
       });
 
-      localStorage.setItem("userId", userId);
-      
-      // Redirect to login
       router.push('/login');
-      
     } catch (err: any) {
-      // Convex errors usually come back in the 'message' property
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || "Registration failed.");
     } finally {
       setIsLoading(false);
     }
@@ -93,14 +92,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-bold text-slate-700 mb-1">Full Name (Surname First)</label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                <input 
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  type="text" 
-                  placeholder="ADAMU Tunde Musa" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" 
-                />
+                <input required value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="ADAMU Tunde Musa" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" />
               </div>
             </div>
 
@@ -108,14 +100,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-bold text-slate-700 mb-1">Institutional Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                <input 
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email" 
-                  placeholder="t.adamu@ui.edu.ng" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" 
-                />
+                <input required value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="t.adamu@ui.edu.ng" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" />
               </div>
             </div>
 
@@ -124,16 +109,8 @@ export default function RegisterPage() {
                 {role === 'student' ? 'Matriculation Number' : 'Staff ID Number'}
               </label>
               <div className="relative">
-                {/* Fixed the missing icon here for consistency */}
                 <Building2 className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                <input 
-                  required
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
-                  type="text" 
-                  placeholder={role === 'student' ? '218843' : 'UI/STF/2021'} 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" 
-                />
+                <input required value={idNumber} onChange={(e) => setIdNumber(e.target.value)} type="text" placeholder={role === 'student' ? '218843' : 'UI/STF/2021'} className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" />
               </div>
             </div>
 
@@ -141,11 +118,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                <select 
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all appearance-none"
-                >
+                <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all appearance-none">
                   <option value="Computer Science">Computer Science</option>
                   <option value="Zoology">Zoology</option>
                   <option value="Chemistry">Chemistry</option>
@@ -155,27 +128,33 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div>
+            {/* CONDITIONAL LEVEL FIELD FOR STUDENTS */}
+            {role === 'student' && (
+              <div className="animate-in fade-in slide-in-from-left-2 duration-300">
+                <label className="block text-sm font-bold text-slate-700 mb-1">Level</label>
+                <div className="relative">
+                  <Layers className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                  <select 
+                    value={level} 
+                    onChange={(e) => setLevel(e.target.value)} 
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all appearance-none"
+                  >
+                    {LEVELS.map(lvl => <option key={lvl} value={lvl}>{lvl}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <div className={role === 'staff' ? 'md:col-span-1' : ''}>
               <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                <input 
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  type="password" 
-                  placeholder="••••••••" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" 
-                />
+                <input required value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-blue-100 outline-none transition-all" />
               </div>
             </div>
 
             <div className="md:col-span-2 mt-3">
-              <button 
-                disabled={isLoading}
-                type="submit"
-                className="w-full bg-[#fdb813] text-[15px] text-[#002147] font-black py-3 rounded-lg hover:bg-[#eab011] transition-all shadow-sm uppercase tracking-wide flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
+              <button disabled={isLoading} type="submit" className="w-full bg-[#fdb813] text-[15px] text-[#002147] font-black py-3 rounded-lg hover:bg-[#eab011] transition-all shadow-sm uppercase tracking-wide flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
                 {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Complete Registration"}
               </button>
             </div>
@@ -184,9 +163,7 @@ export default function RegisterPage() {
           <div className="mt-5 text-center">
             <p className="text-slate-500 text-[15px]">
               Already have an account? 
-              <Link href="/login" className="ml-2 font-bold text-[#002147] hover:underline">
-                Sign In
-              </Link>
+              <Link href="/login" className="ml-2 font-bold text-[#002147] hover:underline">Sign In</Link>
             </p>
           </div>
         </div>

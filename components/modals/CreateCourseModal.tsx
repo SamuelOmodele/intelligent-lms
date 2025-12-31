@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -12,7 +12,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
-// import { toast } from "sonner"; // Or your preferred toast library
 
 type TProps = { children: React.ReactNode };
 
@@ -22,6 +21,7 @@ const CreateCourseModal = ({ children }: TProps) => {
 
   // Data fetching
   const lecturers = useQuery(api.courses.getLecturers);
+  const departments = useQuery(api.departments.list);
   const createCourse = useMutation(api.courses.create);
 
   // Form State
@@ -29,14 +29,26 @@ const CreateCourseModal = ({ children }: TProps) => {
     courseName: "",
     courseCode: "",
     lecturerId: "" as Id<"users"> | "",
-    department: "Computer Science",
+    department: "", // Changed to empty string for enforcement
     description: "",
   });
 
+  // Reset lecturer if department changes to prevent cross-dept assignment
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, lecturerId: "" }));
+  }, [formData.department]);
+
+  // Filtered lecturers based on selected department
+  const filteredLecturers = lecturers?.filter(
+    (l) => l.department === formData.department
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.department) return alert("Please select a department first");
     if (!formData.lecturerId) return alert("Please select a lecturer");
-    
+
     setLoading(true);
     try {
       await createCourse({
@@ -46,8 +58,15 @@ const CreateCourseModal = ({ children }: TProps) => {
         department: formData.department,
         description: formData.description,
       });
-      setOpen(false); // Close modal on success
-      setFormData({ courseName: "", courseCode: "", lecturerId: "", department: "Computer Science", description: "" });
+
+      setOpen(false);
+      setFormData({
+        courseName: "",
+        courseCode: "",
+        lecturerId: "",
+        department: "",
+        description: ""
+      });
       alert("Course registered successfully!");
     } catch (error: any) {
       alert(error.data || "Failed to create course");
@@ -66,6 +85,25 @@ const CreateCourseModal = ({ children }: TProps) => {
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-0">
+          
+          {/* 1. Department Selection (Enforced First) */}
+          <div className="space-y-1">
+            <select
+              required
+              className="w-full p-3 border rounded-xl outline-[#002147]"
+              value={formData.department}
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            >
+              <option value="">-- Choose department --</option>
+              {!departments && <option>Loading departments...</option>}
+              {departments?.map((dept) => (
+                <option key={dept._id} value={dept.name}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <input
             required
             className="w-full p-3 border rounded-xl outline-[#002147]"
@@ -73,6 +111,7 @@ const CreateCourseModal = ({ children }: TProps) => {
             value={formData.courseName}
             onChange={(e) => setFormData({ ...formData, courseName: e.target.value })}
           />
+
           <div className="flex gap-4">
             <input
               required
@@ -81,27 +120,24 @@ const CreateCourseModal = ({ children }: TProps) => {
               value={formData.courseCode}
               onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
             />
+
+            {/* 2. Lecturer Selection (Filtered by Dept) */}
             <select
               required
-              className="flex-1 p-3 border rounded-xl bg-white"
+              disabled={!formData.department}
+              className="flex-1 p-3 border rounded-xl bg-white disabled:bg-slate-50 disabled:cursor-not-allowed"
               value={formData.lecturerId}
               onChange={(e) => setFormData({ ...formData, lecturerId: e.target.value as Id<"users"> })}
             >
-              <option value="">Select Lecturer</option>
-              {lecturers?.map((l) => (
+              <option value="">
+                Select Lecturer
+              </option>
+              {filteredLecturers?.map((l) => (
                 <option key={l._id} value={l._id}>{l.name}</option>
               ))}
             </select>
           </div>
-          <select
-            className="w-full p-3 border rounded-xl bg-white"
-            value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-          >
-            <option>Computer Science</option>
-            <option>Mathematics</option>
-            <option>Statistics</option>
-          </select>
+
           <textarea
             required
             className="w-full p-3 border rounded-xl h-24 outline-[#002147]"
@@ -109,9 +145,10 @@ const CreateCourseModal = ({ children }: TProps) => {
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
+          
           <button
-            disabled={loading}
-            className="w-full bg-[#002147] text-white py-4 rounded-xl font-black uppercase text-xs flex justify-center items-center gap-2"
+            disabled={loading || !formData.lecturerId}
+            className="w-full bg-[#002147] text-white py-4 rounded-xl font-black uppercase text-xs flex justify-center items-center gap-2 disabled:opacity-50"
           >
             {loading ? <Loader2 className="animate-spin" size={18} /> : "Register Course"}
           </button>

@@ -9,9 +9,10 @@ export const register = mutation({
     email: v.string(),
     password: v.string(),
     role: v.string(),
-    department: v.optional(v.string()),
+    department: v.string(),
     matricNumber: v.optional(v.string()),
     staffId: v.optional(v.string()),
+    level: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // 1. Check if user already exists
@@ -34,6 +35,15 @@ export const register = mutation({
       department: args.department,
       matricNumber: args.matricNumber,
       staffId: args.staffId,
+      level: args.level,
+      isBlocked: false,
+    });
+
+    // LOG THE EVENT
+    await ctx.db.insert("logs", {
+      action: `New ${args.role} registered: ${args.name}`,
+      type: "user",
+      timestamp: Date.now(),
     });
 
     return userId;
@@ -70,5 +80,22 @@ export const login = mutation({
       role: user.role,
       name: user.name,
     };
+  },
+});
+
+export const getUserRole = query({
+  args: { id: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.id);
+    if (!user) return null;
+    return { role: user.role };
+  },
+});
+
+export const currentUser = query({
+  args: { id: v.optional(v.id("users")) },
+  handler: async (ctx, args) => {
+    if (!args.id) return null;
+    return await ctx.db.get(args.id);
   },
 });

@@ -9,6 +9,8 @@
  */
 
 import type * as courses from "../courses.js";
+import type * as dashboard from "../dashboard.js";
+import type * as departments from "../departments.js";
 import type * as lecturers from "../lecturers.js";
 import type * as students from "../students.js";
 import type * as users from "../users.js";
@@ -21,6 +23,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   courses: typeof courses;
+  dashboard: typeof dashboard;
+  departments: typeof departments;
   lecturers: typeof lecturers;
   students: typeof students;
   users: typeof users;

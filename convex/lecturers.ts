@@ -19,7 +19,7 @@ export const listLecturers = query({
           ...lecturer,
           workloadCount: workload.length,
           // Default to false if the field is missing in the DB
-          isBlocked: lecturer.isBlocked ?? false, 
+          isBlocked: lecturer.isBlocked ?? false,
         };
       })
     );
@@ -29,7 +29,13 @@ export const listLecturers = query({
 export const toggleBlockStatus = mutation({
   args: { id: v.id("users"), status: v.boolean() },
   handler: async (ctx, args) => {
-    // This will now work because 'isBlocked' is in the schema
+    const lecturer = await ctx.db.get(args.id);
     await ctx.db.patch(args.id, { isBlocked: args.status });
+
+    await ctx.db.insert("logs", {
+      action: `${args.status ? "Blocked" : "Unblocked"} lecturer: ${lecturer?.name}`,
+      type: "user",
+      timestamp: Date.now(),
+    });
   },
 });

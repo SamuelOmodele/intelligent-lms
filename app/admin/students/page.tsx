@@ -6,13 +6,13 @@ import {
   MoreVertical,
   UserX,
   Download,
-  GraduationCap,
   Mail,
   Users,
   CheckCircle2,
   Building2,
   Loader2,
-  UserCheck
+  UserCheck,
+  AlertTriangle
 } from 'lucide-react';
 
 import {
@@ -24,33 +24,45 @@ import {
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-
-const DEPARTMENTS = ["All Departments", "Computer Science", "Mathematics", "Statistics"];
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function AdminStudentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deptFilter, setDeptFilter] = useState("All Departments");
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
 
   // Convex Data
   const students = useQuery(api.students.listStudents);
+  const departments = useQuery(api.departments.list);
   const stats = useQuery(api.students.getStudentStats);
   const toggleAccess = useMutation(api.students.toggleStudentAccess);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleToggleAccess = async (id: any, currentStatus: boolean) => {
-    const action = currentStatus ? "unblock" : "suspend";
-    if (confirm(`Are you sure you want to ${action} this student?`)) {
-      await toggleAccess({ id, isBlocked: !currentStatus });
+  // Handle Access Toggle
+  const handleToggleConfirm = async () => {
+    if (!selectedStudent) return;
+    setIsSubmitting(true);
+    try {
+      await toggleAccess({
+        id: selectedStudent._id,
+        isBlocked: !selectedStudent.isBlocked
+      });
+      setIsAccessModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const filteredStudents = students?.filter(student => {
-    const matchesSearch = 
+    const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (student as any).matricNumber?.includes(searchTerm);
-    
+      (student as any).matricNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const studentDept = (student as any).department || "Computer Science";
+    // Fixed logic: matches if "All Departments" is selected OR the strings match exactly
     const matchesDept = deptFilter === "All Departments" || studentDept === deptFilter;
-    
+
     return matchesSearch && matchesDept;
   }) || [];
 
@@ -71,8 +83,8 @@ export default function AdminStudentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[
           { label: "Total Registered", val: stats?.total, icon: <Users />, color: "bg-[#002147] text-white", iconBg: "bg-blue-900/50" },
-          { label: "This Week", val: stats?.thisWeek, icon: <CheckCircle2 />, color: "bg-white text-[#002147]", iconBg: "bg-emerald-50 text-emerald-600" },
-          { label: "Today", val: stats?.today, icon: <CheckCircle2 />, color: "bg-white text-[#002147]", iconBg: "bg-emerald-50 text-emerald-600" }
+          { label: "Registered This Week", val: stats?.thisWeek, icon: <CheckCircle2 />, color: "bg-white text-[#002147]", iconBg: "bg-emerald-50 text-emerald-600" },
+          { label: "Registered Today", val: stats?.today, icon: <CheckCircle2 />, color: "bg-white text-[#002147]", iconBg: "bg-emerald-50 text-emerald-600" }
         ].map((stat, i) => (
           <div key={i} className={`${stat.color} p-6 rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm`}>
             <div>
@@ -104,8 +116,10 @@ export default function AdminStudentsPage() {
             value={deptFilter}
             onChange={(e) => setDeptFilter(e.target.value)}
           >
-            {DEPARTMENTS.map(dept => (
-              <option key={dept} value={dept}>{dept}</option>
+            {/* Value must match the initial state string */}
+            <option value="All Departments">All Departments</option>
+            {departments?.map(dept => (
+              <option key={dept._id} value={dept.name}>{dept.name}</option>
             ))}
           </select>
         </div>
@@ -170,16 +184,13 @@ export default function AdminStudentsPage() {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger className="p-2 hover:bg-white hover:shadow-sm rounded-lg border border-transparent hover:border-slate-200 transition-all outline-none">
+                        <DropdownMenuTrigger className="p-2 hover:bg-slate-100 rounded-lg outline-none transition-colors">
                           <MoreVertical size={18} className="text-slate-400" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1 shadow-xl border-slate-200">
-                          <DropdownMenuItem className="flex items-center gap-2 text-xs font-bold p-3 cursor-pointer">
-                            <GraduationCap size={16} /> Edit Profile
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => handleToggleAccess(student._id, !!student.isBlocked)}
-                            className={`flex items-center gap-2 text-xs font-bold p-3 cursor-pointer ${student.isBlocked ? 'text-emerald-600 focus:bg-emerald-50' : 'text-red-600 focus:bg-red-50'}`}
+                          <DropdownMenuItem
+                            onClick={() => { setSelectedStudent(student); setIsAccessModalOpen(true); }}
+                            className={`flex gap-2 font-bold text-xs p-3 cursor-pointer ${student.isBlocked ? 'text-emerald-600' : 'text-red-600'}`}
                           >
                             {student.isBlocked ? <UserCheck size={16} /> : <UserX size={16} />}
                             {student.isBlocked ? 'Restore Access' : 'Suspend Access'}
@@ -194,6 +205,34 @@ export default function AdminStudentsPage() {
           </div>
         )}
       </div>
+
+      {/* MODAL: ACCESS CONTROL */}
+      <Dialog open={isAccessModalOpen} onOpenChange={setIsAccessModalOpen}>
+        <DialogContent className="max-w-sm text-center rounded-3xl">
+          <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-2 ${selectedStudent?.isBlocked ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+            {selectedStudent?.isBlocked ? <UserCheck size={32} /> : <AlertTriangle size={32} />}
+          </div>
+          <DialogHeader>
+            <DialogTitle className="text-center font-black text-[#002147] text-xl">
+              {selectedStudent?.isBlocked ? 'Restore Access?' : 'Suspend Access?'}
+            </DialogTitle>
+            <DialogDescription className="text-center font-medium">
+              Are you sure you want to {selectedStudent?.isBlocked ? 'unblock' : 'suspend'} <b>{selectedStudent?.name}</b>?
+              This will {selectedStudent?.isBlocked ? 'allow' : 'restrict'} their login access.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2 pt-4">
+            <button onClick={() => setIsAccessModalOpen(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-black text-xs uppercase cursor-pointer">Cancel</button>
+            <button
+              onClick={handleToggleConfirm}
+              disabled={isSubmitting}
+              className={`flex-1 py-3 text-white rounded-xl font-black text-xs uppercase cursor-pointer ${selectedStudent?.isBlocked ? 'bg-emerald-600' : 'bg-red-600'}`}
+            >
+              {isSubmitting ? <Loader2 className="animate-spin mx-auto" size={14} /> : 'Confirm Action'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

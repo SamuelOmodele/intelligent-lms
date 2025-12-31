@@ -7,15 +7,13 @@ export default defineSchema({
     name: v.string(),
     email: v.string(),
     password: v.string(),
-    role: v.string(), // "admin", "lecturer", "student"
-    department: v.optional(v.string()),
-    staffId: v.optional(v.string()),
+    role: v.string(),
+    department: v.string(),
     matricNumber: v.optional(v.string()),
-    // ADD THIS LINE:
-    isBlocked: v.optional(v.boolean()), 
+    staffId: v.optional(v.string()),
+    level: v.optional(v.string()),
+    isBlocked: v.optional(v.boolean()),
   }).index("by_email", ["email"]),
-
-  // Keep your other tables like departments, etc.
 
   courses: defineTable({
     courseName: v.string(),
@@ -24,6 +22,22 @@ export default defineSchema({
     department: v.string(),
     description: v.string(),
     createdBy: v.id("users"), // Admin who created it
-  }).index("by_code", ["courseCode"]),
+  }).index("by_code", ["courseCode"])
+    .index("by_lecturerId", ["lecturerId"]),
+
+  departments: defineTable({
+    name: v.string(),
+    code: v.string(),
+    // Add these lines to match your database data
+    courseCount: v.optional(v.number()),
+    staffCount: v.optional(v.number()),
+    studentCount: v.optional(v.number()),
+  }),
+
+  logs: defineTable({
+    action: v.string(),     // e.g., "New Student Registered"
+    type: v.string(),       // e.g., "user", "course", "system" (to determine dot color)
+    timestamp: v.number(),  // used for sorting and "time ago"
+  }),
 
 });
