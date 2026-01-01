@@ -29,7 +29,8 @@ const CreateCourseModal = ({ children }: TProps) => {
     courseName: "",
     courseCode: "",
     lecturerId: "" as Id<"users"> | "",
-    department: "", // Changed to empty string for enforcement
+    department: "", 
+    unit: 1, 
     description: "",
   });
 
@@ -56,6 +57,7 @@ const CreateCourseModal = ({ children }: TProps) => {
         courseCode: formData.courseCode,
         lecturerId: formData.lecturerId as Id<"users">,
         department: formData.department,
+        unit: formData.unit,
         description: formData.description,
       });
 
@@ -65,6 +67,7 @@ const CreateCourseModal = ({ children }: TProps) => {
         courseCode: "",
         lecturerId: "",
         department: "",
+        unit: 1,
         description: ""
       });
       alert("Course registered successfully!");
@@ -85,7 +88,7 @@ const CreateCourseModal = ({ children }: TProps) => {
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-0">
-          
+
           {/* 1. Department Selection (Enforced First) */}
           <div className="space-y-1">
             <select
@@ -138,6 +141,24 @@ const CreateCourseModal = ({ children }: TProps) => {
             </select>
           </div>
 
+          <select
+            required
+            disabled={!formData.department}
+            className="w-full p-3 border rounded-xl bg-white"
+            value={formData.unit}
+            onChange={(e) => setFormData({ ...formData, unit: Number(e.target.value) })}
+          >
+            <option value="">
+              Unit
+            </option>
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+            <option value={3}>3</option>
+            <option value={4}>4</option>
+            <option value={5}>5</option>
+            <option value={6}>6</option>
+          </select>
+
           <textarea
             required
             className="w-full p-3 border rounded-xl h-24 outline-[#002147]"
@@ -145,7 +166,7 @@ const CreateCourseModal = ({ children }: TProps) => {
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
-          
+
           <button
             disabled={loading || !formData.lecturerId}
             className="w-full bg-[#002147] text-white py-4 rounded-xl font-black uppercase text-xs flex justify-center items-center gap-2 disabled:opacity-50"

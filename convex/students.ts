@@ -75,3 +75,51 @@ export const updateStudent = mutation({
     });
   },
 });
+
+export const getInstructorStudents = query({
+  args: { lecturerId: v.id("users") },
+  handler: async (ctx, args) => {
+    // 1. Get all courses assigned to this lecturer
+    const myCourses = await ctx.db
+      .query("courses")
+      .withIndex("by_lecturerId", (q) => q.eq("lecturerId", args.lecturerId))
+      .collect();
+
+    if (myCourses.length === 0) return [];
+
+    const courseIds = myCourses.map((c) => c._id);
+
+    // 2. Find all enrollments for these courses
+    // We fetch all at once to minimize database roundtrips
+    const allEnrollments = await ctx.db
+      .query("enrollments")
+      .collect(); 
+    
+    // Filter enrollments that match the instructor's courses
+    const myEnrollments = allEnrollments.filter((e) => courseIds.includes(e.courseId));
+
+    // 3. Get unique student IDs and fetch their user profiles
+    const studentData = await Promise.all(
+      myEnrollments.map(async (enrollment) => {
+        const student = await ctx.db.get(enrollment.studentId);
+        const course = myCourses.find((c) => c._id === enrollment.courseId);
+
+        if (!student) return null;
+
+        return {
+          id: student._id,
+          name: student.name,
+          email: student.email,
+          matric: student.matricNumber || "N/A",
+          department: student.department,
+          level: student.level || "N/A",
+          course: course?.courseCode || "Unknown",
+          enrolledAt: enrollment.enrolledAt,
+        };
+      })
+    );
+
+    // Filter out any nulls and return
+    return studentData.filter((s) => s !== null);
+  },
+});

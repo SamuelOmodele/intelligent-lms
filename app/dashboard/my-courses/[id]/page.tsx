@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState } from 'react';
 import {
@@ -6,25 +7,40 @@ import {
     FileText,
     Sparkles,
     MessageCircle,
-    ArrowDownToLine,
     Clock,
     CheckCircle2,
     ArrowUpToLine,
     BookText,
+    Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import StudyModal from '@/components/shared/StudyModal';
+import { useParams } from 'next/navigation';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import StudentLessonsTab from '@/components/course/StudentLessonsTab';
 
 export default function CourseClassroom() {
+
+    const params = useParams();
+    const courseId = params.id as any;
+
     const [activeTab, setActiveTab] = useState('Lessons');
+    const [activeLesson, setActiveLesson] = useState("");
     const [openModal, setOpenModal] = useState(false);
 
-    const course = {
-        code: "CSC 401",
-        name: "Analysis of Algorithms",
-        lecturer: "Prof. A. B. Adeboye",
-        description: "A deep dive into computational complexity and algorithmic efficiency."
-    };
+    // Fetch live data
+    const courseData = useQuery(api.courses.getCourseClassroomDetails, { courseId });
+
+
+    if (courseData === undefined) return (
+        <div className="h-[60vh] flex flex-col items-center justify-center">
+            <Loader2 className="animate-spin text-[#002147]" size={40} />
+            <p className="mt-4 text-slate-500 font-bold uppercase text-xs tracking-widest">Loading Classroom...</p>
+        </div>
+    );
+
+    if (courseData === null) return <div className="p-20 text-center font-bold">Course not found.</div>;
 
     const tabs = [
         { name: 'Lessons', icon: <BookText size={18} /> },
@@ -42,13 +58,13 @@ export default function CourseClassroom() {
             <div className="bg-white p-8 rounded-[10px] border border-slate-200 mb-4 shadow-sm">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-6">
                     <div className="flex-1">
-                        <h1 className="text-3xl font-black text-[#002147] mb-2">{course.code}: {course.name}</h1>
-                        <p className="text-slate-500 font-medium mb-4">{course.description}</p>
+                        <h1 className="text-3xl font-black text-[#002147] mb-2">{courseData.courseCode}: {courseData.courseName}</h1>
+                        <p className="text-slate-500 font-medium mb-4">{courseData.description}</p>
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-[#002147] flex items-center justify-center">
                                 <User size={16} className="text-[#fdb813]" />
                             </div>
-                            <span className="text-sm font-bold text-[#002147]">{course.lecturer}</span>
+                            <span className="text-sm font-bold text-[#002147]">{courseData.lecturerName}</span>
                         </div>
                     </div>
                 </div>
@@ -73,64 +89,29 @@ export default function CourseClassroom() {
 
             {/* Tab Content Rendering */}
             <div className="">
-                {activeTab === 'Lessons' && <LessonsTab openModal={openModal} setOpenModal={setOpenModal} />}
+                {activeTab === 'Lessons' &&
+                    <StudentLessonsTab
+                        lessons={courseData.lessons}
+                        courseId={courseId}
+                        setOpenStudyModal={setOpenModal}
+                        setActiveLesson={setActiveLesson}
+                    />
+                }
                 {activeTab === 'Assignments' && <AssignmentsTab />}
                 {activeTab === 'Intelligent Assistant' && <AssistantPreview />}
             </div>
-        </div>
-    );
-}
 
-// --- SUB-COMPONENTS FOR TABS ---
-
-function LessonsTab({ openModal, setOpenModal }: { openModal: boolean, setOpenModal: React.Dispatch<React.SetStateAction<boolean>> }) {
-    // Local state to know which topic was clicked
-    const [activeTopic, setActiveTopic] = useState("Algorithmic Complexity");
-
-    const handleOpen = (topic: string) => {
-        setActiveTopic(topic);
-        setOpenModal(true);
-    };
-
-    return (
-        <div className="space-y-2">
-            {[1, 2, 3].map((i) => {
-                const topicName = i === 1 ? "Algorithmic Complexity" : i === 2 ? "Big O Notation" : "Sorting Algorithms";
-                return (
-                    <div key={i} className="bg-white px-3 py-4 rounded-[10px] border border-slate-300 shadow-xs flex items-center justify-between hover:border-[#fdb813] transition-colors cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-blue-50 p-3 rounded-lg text-blue-600 transition-colors">
-                                <BookText size={20} />
-                            </div>
-                            <div>
-                                <p className="font-bold text-[#002147]">Week {i}: {topicName}</p>
-                                <p className="text-xs text-slate-400 font-semibold uppercase">PDF Material • 2.4 MB</p>
-                            </div>
-                        </div>
-                        <div className='flex items-center gap-2 mr-1'>
-                            <button
-                                onClick={() => handleOpen(topicName)}
-                                className="text-[10px] cursor-pointer hover:opacity-80 font-black uppercase text-[#002147] bg-[#fdb813] px-3 py-2 rounded-[5px]"
-                            >
-                                Open Material
-                            </button>
-                            <ArrowDownToLine size={36} className='text-[#002147] hover:bg-gray-100 p-2 rounded-full' />
-                        </div>
-                    </div>
-                );
-            })}
-
-            {/* ONLY ONE MODAL INSTANCE OUTSIDE THE LOOP */}
             <StudyModal
                 openModal={openModal}
                 setOpenModal={setOpenModal}
-                initialCourseCode='CSC 401'
-                initialLessonTopic={activeTopic}
+                initialCourseCode={courseData.courseCode}
+                activeLesson={activeLesson}
             />
         </div>
     );
 }
 
+// --- SUB-COMPONENTS FOR TABS ---
 function AssistantPreview() {
     const [openModal, setOpenModal] = useState(false);
     return (
@@ -144,11 +125,11 @@ function AssistantPreview() {
                 <MessageCircle size={18} /> Launch Study Assistant
             </button>
 
-            <StudyModal
+            {/* <StudyModal
                 initialCourseCode='CSC 401'
                 openModal={openModal}
                 setOpenModal={setOpenModal}
-            />
+            /> */}
         </div>
     );
 }
@@ -214,13 +195,4 @@ function AssignmentsTab() {
         </div>
     );
 }
-
-function ContentPlaceholder({ title }: { title: string }) {
-    return (
-        <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl">
-            <p className="text-slate-400 font-bold italic">{title} module coming soon...</p>
-        </div>
-    );
-}
-
 

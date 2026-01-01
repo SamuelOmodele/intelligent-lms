@@ -20,6 +20,7 @@ export default defineSchema({
     courseCode: v.string(),
     lecturerId: v.id("users"), // Reference to the lecturer
     department: v.string(),
+    unit: v.number(),
     description: v.string(),
     createdBy: v.id("users"), // Admin who created it
   }).index("by_code", ["courseCode"])
@@ -39,5 +40,31 @@ export default defineSchema({
     type: v.string(),       // e.g., "user", "course", "system" (to determine dot color)
     timestamp: v.number(),  // used for sorting and "time ago"
   }),
+
+  enrollments: defineTable({
+    studentId: v.id("users"),
+    courseId: v.id("courses"),
+    enrolledAt: v.number(),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_course", ["courseId"])
+    .index("by_student_course", ["studentId", "courseId"]), // Prevents double enrollment
+
+  lessons: defineTable({
+    title: v.string(),
+    week: v.number(),
+    courseId: v.id("courses"),
+    storageId: v.optional(v.id("_storage")), // For PDF uploads
+    format: v.string(), // e.g., "PDF" or "Video"
+  }).index("by_course", ["courseId"]),
+
+  assignments: defineTable({
+    title: v.string(),
+    instructions: v.string(),
+    courseId: v.id("courses"),
+    dueDate: v.string(),
+    attachmentId: v.optional(v.string()),
+    status: v.string(), // "Pending" or "Closed"
+  }).index("by_course", ["courseId"]),
 
 });

@@ -1,5 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
     Users,
     BookOpen,
@@ -7,29 +11,37 @@ import {
     GraduationCap,
     Filter,
     MoreVertical,
+    Loader2,
 } from 'lucide-react';
 
-// Mock Data
-const STATS = [
-    { label: 'Assigned Courses', value: '4', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Enrolled Students', value: '1,284', icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Assignments', value: '24', icon: FileEdit, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Assessments', value: '12', icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-];
-
-const STUDENTS = [
-    { id: "1", name: "Olawale Adeleke", email: "olawale@ui.edu.ng", course: "CSC 401", level: "400L", status: "Active" },
-    { id: "2", name: "Chidi Okafor", email: "chidi.o@ui.edu.ng", course: "MAT 211", level: "200L", status: "Active" },
-    { id: "3", name: "Amina Yusuf", email: "amina.y@ui.edu.ng", course: "CSC 415", level: "400L", status: "Inactive" },
-    { id: "4", name: "Tunde Bakare", email: "tunde@ui.edu.ng", course: "CSC 401", level: "400L", status: "Active" },
-];
-
-const LECTURER_COURSES = ["All", "CSC 401", "CSC 415", "MAT 211"];
-
-export default function AdminDashboard() {
+export default function LecturerDashboard() {
+    const [userId, setUserId] = useState<string | null>(null);
     const [courseFilter, setCourseFilter] = useState("All");
 
-    const filteredStudents = STUDENTS.filter(s =>
+    useEffect(() => {
+        setUserId(localStorage.getItem("userId"));
+    }, []);
+
+    const data = useQuery(api.lecturers.getLecturerDashboardStats, { 
+        lecturerId: userId as any 
+    });
+
+    if (!data) {
+        return (
+            <div className="h-60 flex items-center justify-center">
+                <Loader2 className="animate-spin text-slate-300" />
+            </div>
+        );
+    }
+
+    const STATS = [
+        { label: 'Assigned Courses', value: data.stats.assignedCourses, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { label: 'Enrolled Students', value: data.stats.totalStudents, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' },
+        { label: 'Assignments', value: data.stats.assignments, icon: FileEdit, color: 'text-amber-600', bg: 'bg-amber-50' },
+        { label: 'Assessments', value: data.stats.assessments, icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    ];
+
+    const filteredStudents = data.students.filter(s =>
         courseFilter === "All" ? true : s.course === courseFilter
     );
 
@@ -63,7 +75,7 @@ export default function AdminDashboard() {
                                 onChange={(e) => setCourseFilter(e.target.value)}
                                 className="pl-10 pr-6 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-[#002147] outline-none focus:ring-2 ring-[#fdb813] transition-all appearance-none cursor-pointer"
                             >
-                                {LECTURER_COURSES.map(course => (
+                                {data.courseList.map(course => (
                                     <option key={course} value={course}>Course: {course}</option>
                                 ))}
                             </select>
@@ -83,34 +95,43 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {filteredStudents.map((student) => (
-                                <tr key={student.id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="px-8 py-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[#002147] text-xs">
-                                                {student.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-[#002147] text-sm">{student.name}</p>
-                                                <p className="text-xs text-slate-400 font-medium">{student.email}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-5 text-sm font-bold text-[#002147]">{student.course}</td>
-                                    <td className="px-8 py-5 text-sm font-bold text-slate-500">{student.level}</td>
-                                    <td className="px-8 py-5">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${student.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
-                                            }`}>
-                                            {student.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-8 py-5 text-right">
-                                        <button className="text-slate-300 hover:text-[#002147] transition-colors">
-                                            <MoreVertical size={18} />
-                                        </button>
+                            {filteredStudents.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-8 py-10 text-center text-slate-400 text-sm font-medium">
+                                        No students enrolled in this selection.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredStudents.map((student) => (
+                                    <tr key={student.id} className="hover:bg-slate-50/50 transition-colors group">
+                                        <td className="px-8 py-5">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[#002147] text-xs">
+                                                    {student.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-[#002147] text-sm">{student.name}</p>
+                                                    <p className="text-xs text-slate-400 font-medium">{student.email}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5 text-sm font-bold text-[#002147]">{student.course}</td>
+                                        <td className="px-8 py-5 text-sm font-bold text-slate-500">{student.level}</td>
+                                        <td className="px-8 py-5">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                                                student.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                                            }`}>
+                                                {student.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-5 text-right">
+                                            <button className="text-slate-300 hover:text-[#002147] transition-colors">
+                                                <MoreVertical size={18} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

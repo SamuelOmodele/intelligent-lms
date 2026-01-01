@@ -1,28 +1,66 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import {
     ChevronLeft,
     CheckCircle2,
     User,
     BookOpen,
     GraduationCap,
-    ShieldCheck
+    Loader2
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CourseDetails() {
-    const [isEnrolled, setIsEnrolled] = useState(false);
+    const params = useParams();
+    const courseId = params.id as any;
 
-    // Example course data - in a real app, you'd fetch this based on the ID
-    const course = {
-        code: "CSC 401",
-        name: "Analysis of Algorithms",
-        description: "This course provides an exhaustive exploration of the design and analysis of efficient algorithms. It covers fundamental techniques including divide-and-conquer, dynamic programming, and greedy approaches. Students will learn to evaluate algorithmic complexity using asymptotic notation and apply these principles to solve complex computational problems relevant to modern software engineering and data science.",
-        units: "3.0 Units",
-        level: "400 Level",
-        lecturer: "Prof. A. B. Adeboye",
-        designation: "Senior Lecturer, Computer Science Dept"
+    // Inside your CourseDetails component
+    const [userId, setUserId] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        // Sync localStorage to state on mount
+        setUserId(localStorage.getItem('userId'));
+    }, []);
+
+    const course = useQuery(api.courses.getCourseDetails, { courseId });
+
+    // Only run the enrollment query if we actually have a userId
+    const enrollment = useQuery(
+        api.courses.checkEnrollment,
+        userId ? { courseId, studentId: userId } : "skip"
+    );
+
+    const enroll = useMutation(api.courses.enrollInCourse);
+
+    const handleEnrollment = async () => {
+        if (!userId) {
+            toast.error("User session not found. Please login.");
+            return;
+        }
+        try {
+            await enroll({ courseId, studentId: userId });
+            toast.success(`Successfully enrolled in ${course?.courseCode}`);
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to enroll in course");
+        }
     };
+
+    if (course === undefined || enrollment === undefined) return (
+        <div className="h-[60vh] flex flex-col items-center justify-center">
+            <Loader2 className="animate-spin text-[#002147]" size={40} />
+            <p className="mt-4 text-slate-500 font-bold uppercase text-xs tracking-widest">Loading Course Details...</p>
+        </div>
+    );
+
+    if (course === null) return <div className="p-20 text-center font-bold">Course not found.</div>;
+
+    const isEnrolled = !!enrollment;
 
     return (
         <div className="max-w-7xl mx-auto">
@@ -44,11 +82,11 @@ export default function CourseDetails() {
 
                     <div className="relative z-10">
                         <span className="bg-[#fdb813] text-[#002147] px-3 py-1 rounded-md text-xs font-black uppercase tracking-widest mb-4 inline-block">
-                            {course.level}
+                            {course.department}
                         </span>
-                        <h1 className="text-3xl md:text-5xl font-black mb-2">{course.code}</h1>
+                        <h1 className="text-3xl md:text-5xl font-black mb-2">{course.courseCode}</h1>
                         <p className="text-blue-100 text-lg md:text-xl font-medium max-w-2xl">
-                            {course.name}
+                            {course.courseName}
                         </p>
                     </div>
                 </div>
@@ -66,7 +104,6 @@ export default function CourseDetails() {
                             <p className="text-slate-600 leading-relaxed text-lg italic">
                                 &quot;{course.description}&quot;
                             </p>
-
                         </div>
 
                         {/* Right: Lecturer & Action */}
@@ -79,8 +116,7 @@ export default function CourseDetails() {
                                         <User size={24} className="text-[#fdb813]" />
                                     </div>
                                     <div>
-                                        <p className="font-black text-[#002147] text-sm">{course.lecturer}</p>
-                                        <p className="text-[10px] text-slate-500 font-bold uppercase">{course.designation}</p>
+                                        <p className="font-black text-[#002147] text-sm">{course.lecturerName}</p>
                                     </div>
                                 </div>
                             </div>
@@ -89,15 +125,15 @@ export default function CourseDetails() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between px-2">
                                     <span className="text-slate-500 font-bold text-sm">Course Credits</span>
-                                    <span className="text-[#002147] font-black">{course.units}</span>
+                                    <span className="text-[#002147] font-black">{course.unit} Units</span>
                                 </div>
 
                                 <button
-                                    onClick={() => setIsEnrolled(true)}
+                                    onClick={handleEnrollment}
                                     disabled={isEnrolled}
                                     className={`w-full py-4 rounded-xl font-black text-sm transition-all shadow-lg flex items-center justify-center gap-2 ${isEnrolled
-                                        ? 'bg-emerald-500 text-white cursor-default'
-                                        : 'bg-[#002147] text-white hover:bg-[#003366] shadow-blue-900/20'
+                                        ? 'bg-emerald-500 text-white cursor-default shadow-emerald-900/10'
+                                        : 'bg-[#002147] text-white hover:bg-[#003366] shadow-blue-900/20 active:scale-[0.98]'
                                         }`}
                                 >
                                     {isEnrolled ? (
@@ -106,8 +142,13 @@ export default function CourseDetails() {
                                         'Enroll Now'
                                     )}
                                 </button>
-                            </div>
 
+                                {isEnrolled && (
+                                    <p className="text-center text-[10px] font-bold text-emerald-600 uppercase tracking-tight">
+                                        You are currently a student in this course
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
