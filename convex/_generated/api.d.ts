@@ -14,6 +14,7 @@ import type * as dashboard from "../dashboard.js";
 import type * as departments from "../departments.js";
 import type * as lecturers from "../lecturers.js";
 import type * as students from "../students.js";
+import type * as submissions from "../submissions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   departments: typeof departments;
   lecturers: typeof lecturers;
   students: typeof students;
+  submissions: typeof submissions;
   users: typeof users;
 }>;
 

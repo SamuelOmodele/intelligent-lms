@@ -67,4 +67,18 @@ export default defineSchema({
     status: v.string(), // "Pending" or "Closed"
   }).index("by_course", ["courseId"]),
 
+  submissions: defineTable({
+    studentId: v.id("users"),
+    assignmentId: v.id("assignments"),
+    fileUrl: v.string(),
+    storageId: v.string(), // If using Convex storage
+    submittedAt: v.number(),
+    grade: v.optional(v.string()),
+    feedback: v.optional(v.string()),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_assignment", ["assignmentId"])
+    // This index is crucial for the .unique() query we used earlier
+    .index("by_student_assignment", ["studentId", "assignmentId"]),
+
 });

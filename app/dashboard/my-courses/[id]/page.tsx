@@ -7,9 +7,6 @@ import {
     FileText,
     Sparkles,
     MessageCircle,
-    Clock,
-    CheckCircle2,
-    ArrowUpToLine,
     BookText,
     Loader2,
 } from 'lucide-react';
@@ -19,6 +16,7 @@ import { useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import StudentLessonsTab from '@/components/course/StudentLessonsTab';
+import StudentAssignmentTab from '@/components/course/StudentAssignmentTab';
 
 export default function CourseClassroom() {
 
@@ -97,7 +95,11 @@ export default function CourseClassroom() {
                         setActiveLesson={setActiveLesson}
                     />
                 }
-                {activeTab === 'Assignments' && <AssignmentsTab />}
+                {activeTab === 'Assignments' &&
+                    <StudentAssignmentTab
+                        courseId={courseId}
+                    />
+                }
                 {activeTab === 'Intelligent Assistant' && <AssistantPreview />}
             </div>
 
@@ -134,65 +136,65 @@ function AssistantPreview() {
     );
 }
 
-function AssignmentsTab() {
-    const assignments = [
-        {
-            id: "asgn-1",
-            title: "Big O Analysis Exercise",
-            dueDate: "Oct 24, 2024",
-            status: "Pending",
-            marks: "10",
-            description: "Analyze the time complexity of the provided Python functions. Submit as a PDF."
-        },
-        {
-            id: "asgn-2",
-            title: "Sorting Algorithm Implementation",
-            dueDate: "Nov 02, 2024",
-            status: "Submitted",
-            marks: "20",
-            description: "Implement Merge Sort and Quick Sort. Compare their performance on random arrays."
-        }
-    ];
+// function AssignmentsTab() {
+//     const assignments = [
+//         {
+//             id: "asgn-1",
+//             title: "Big O Analysis Exercise",
+//             dueDate: "Oct 24, 2024",
+//             status: "Pending",
+//             marks: "10",
+//             description: "Analyze the time complexity of the provided Python functions. Submit as a PDF."
+//         },
+//         {
+//             id: "asgn-2",
+//             title: "Sorting Algorithm Implementation",
+//             dueDate: "Nov 02, 2024",
+//             status: "Submitted",
+//             marks: "20",
+//             description: "Implement Merge Sort and Quick Sort. Compare their performance on random arrays."
+//         }
+//     ];
 
-    return (
-        <div className="space-y-3">
-            {assignments.map((asgn) => (
-                <div key={asgn.id} className="bg-white rounded-[5px] border border-slate-200 overflow-hidden shadow-sm">
-                    <div className="p-4 flex flex-col md:flex-row justify-between items-start gap-4">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className={`text-[10px] font-black px-2 py-1 rounded uppercase ${asgn.status === 'Submitted' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                                    }`}>
-                                    {asgn.status}
-                                </span>
-                            </div>
-                            <h3 className="text-lg font-black text-[#002147] mb-2">{asgn.title}</h3>
-                            <p className="text-sm text-slate-500 font-medium mb-4">{asgn.description}</p>
+//     return (
+//         <div className="space-y-3">
+//             {assignments.map((asgn) => (
+//                 <div key={asgn.id} className="bg-white rounded-[5px] border border-slate-200 overflow-hidden shadow-sm">
+//                     <div className="p-4 flex flex-col md:flex-row justify-between items-start gap-4">
+//                         <div className="flex-1">
+//                             <div className="flex items-center gap-2 mb-2">
+//                                 <span className={`text-[10px] font-black px-2 py-1 rounded uppercase ${asgn.status === 'Submitted' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+//                                     }`}>
+//                                     {asgn.status}
+//                                 </span>
+//                             </div>
+//                             <h3 className="text-lg font-black text-[#002147] mb-2">{asgn.title}</h3>
+//                             <p className="text-sm text-slate-500 font-medium mb-4">{asgn.description}</p>
 
-                            <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
-                                <span className="flex items-center gap-1.5"><Clock size={14} /> Due {asgn.dueDate}</span>
-                                <span className="flex items-center gap-1.5"><FileText size={14} /> PDF / DOCX Only</span>
-                            </div>
-                        </div>
+//                             <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
+//                                 <span className="flex items-center gap-1.5"><Clock size={14} /> Due {asgn.dueDate}</span>
+//                                 <span className="flex items-center gap-1.5"><FileText size={14} /> PDF / DOCX Only</span>
+//                             </div>
+//                         </div>
 
-                        <div className="w-full md:w-auto shrink-0">
-                            {asgn.status === 'Submitted' ? (
-                                <button className="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-500 rounded-[5px] font-semibold text-xs uppercase flex items-center justify-center gap-2 cursor-default">
-                                    <CheckCircle2 size={16} /> Already Submitted
-                                </button>
-                            ) : (
-                                <Link
-                                    href={`/dashboard/my-courses/csc401/submit/${asgn.id}`}
-                                    className="w-full md:w-auto px-6 py-3 bg-[#002147] text-white rounded-[5px] font-semibold text-xs uppercase flex items-center justify-center gap-2 hover:bg-[#003366] transition-all"
-                                >
-                                    <ArrowUpToLine size={16} /> Submit Assignment
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-}
+//                         <div className="w-full md:w-auto shrink-0">
+//                             {asgn.status === 'Submitted' ? (
+//                                 <button className="w-full md:w-auto px-6 py-3 bg-slate-100 text-slate-500 rounded-[5px] font-semibold text-xs uppercase flex items-center justify-center gap-2 cursor-default">
+//                                     <CheckCircle2 size={16} /> Already Submitted
+//                                 </button>
+//                             ) : (
+//                                 <Link
+//                                     href={`/dashboard/my-courses/csc401/submit/${asgn.id}`}
+//                                     className="w-full md:w-auto px-6 py-3 bg-[#002147] text-white rounded-[5px] font-semibold text-xs uppercase flex items-center justify-center gap-2 hover:bg-[#003366] transition-all"
+//                                 >
+//                                     <ArrowUpToLine size={16} /> Submit Assignment
+//                                 </Link>
+//                             )}
+//                         </div>
+//                     </div>
+//                 </div>
+//             ))}
+//         </div>
+//     );
+// }
 
