@@ -100,13 +100,15 @@ export default function CourseClassroom() {
                         courseId={courseId}
                     />
                 }
-                {activeTab === 'Intelligent Assistant' && <AssistantPreview />}
+                {activeTab === 'Intelligent Assistant' &&
+                    <AssistantPreview courseData={courseData} />
+                }
             </div>
 
             <StudyModal
                 openModal={openModal}
                 setOpenModal={setOpenModal}
-                initialCourseCode={courseData.courseCode}
+                activeCourse={courseData}
                 activeLesson={activeLesson}
             />
         </div>
@@ -114,7 +116,7 @@ export default function CourseClassroom() {
 }
 
 // --- SUB-COMPONENTS FOR TABS ---
-function AssistantPreview() {
+function AssistantPreview({ courseData }: any) {
     const [openModal, setOpenModal] = useState(false);
     return (
         <div className="bg-slate-900 rounded-3xl p-8 text-center text-white border-4 border-slate-800">
@@ -127,11 +129,12 @@ function AssistantPreview() {
                 <MessageCircle size={18} /> Launch Study Assistant
             </button>
 
-            {/* <StudyModal
-                initialCourseCode='CSC 401'
-                openModal={openModal}
-                setOpenModal={setOpenModal}
-            /> */}
+            {openModal &&
+                <StudyModal
+                    openModal={openModal}
+                    setOpenModal={setOpenModal}
+                    activeCourse={courseData}
+                />}
         </div>
     );
 }

@@ -19,11 +19,15 @@ export default function LecturerDashboard() {
     const [courseFilter, setCourseFilter] = useState("All");
 
     useEffect(() => {
-        setUserId(localStorage.getItem("userId"));
+        const id = localStorage.getItem("userId");
+        if (id) {
+            setUserId(id);
+        }
     }, []);
 
-    const data = useQuery(api.lecturers.getLecturerDashboardStats, { 
-        lecturerId: userId as any 
+    // When calling the query, ensure the type is cast correctly
+    const data = useQuery(api.lecturers.getLecturerDashboardStats, {
+        lecturerId: userId as any // Convex will handle the string-to-id conversion
     });
 
     if (!data) {
@@ -118,9 +122,8 @@ export default function LecturerDashboard() {
                                         <td className="px-8 py-5 text-sm font-bold text-[#002147]">{student.course}</td>
                                         <td className="px-8 py-5 text-sm font-bold text-slate-500">{student.level}</td>
                                         <td className="px-8 py-5">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                                                student.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
-                                            }`}>
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${student.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                                                }`}>
                                                 {student.status}
                                             </span>
                                         </td>

@@ -3,54 +3,60 @@ import { mutation, query } from "./_generated/server";
 
 
 export const getLecturerDashboardStats = query({
-  args: { lecturerId: v.optional(v.id("users")) },
-  handler: async (ctx, args) => {
-    if (!args.lecturerId) return null;
+    args: { lecturerId: v.optional(v.id("users")) },
+    handler: async (ctx, args) => {
+        if (!args.lecturerId) return null;
 
-    // 1. Get courses assigned to this lecturer
-    const courses = await ctx.db
-      .query("courses")
-      .filter((q) => q.eq(q.field("lecturerId"), args.lecturerId))
-      .collect();
+        // 1. Get courses assigned to this lecturer
+        const courses = await ctx.db
+            .query("courses")
+            .filter((q) => q.eq(q.field("lecturerId"), args.lecturerId))
+            .collect();
 
-    const courseIds = courses.map(c => c._id);
-    const courseCodes = courses.map(c => c.courseCode);
+        const courseIds = courses.map(c => c._id);
+        const courseCodes = courses.map(c => c.courseCode);
 
-    // 2. Get enrollments for these courses
-    // Assumes you have an 'enrollments' table linking studentId and courseId
-    const enrollments = await ctx.db
-      .query("enrollments")
-      .collect();
+        // 2. Get enrollments for these courses
+        const enrollments = await ctx.db
+            .query("enrollments")
+            .collect();
 
-    const myEnrollments = enrollments.filter(e => courseIds.includes(e.courseId));
+        const myEnrollments = enrollments.filter(e => courseIds.includes(e.courseId));
 
-    // 3. Get student details for the table
-    const studentData = await Promise.all(
-      myEnrollments.map(async (enrol) => {
-        const student = await ctx.db.get(enrol.studentId);
-        const course = courses.find(c => c._id === enrol.courseId);
+        // 3. NEW: Get assignments for these courses
+        // Fetch all assignments and filter by the lecturer's courses
+        const allAssignments = await ctx.db.query("assignments").collect();
+        const myAssignments = allAssignments.filter(asgn => 
+            courseIds.includes(asgn.courseId)
+        );
+
+        // 4. Get student details for the table
+        const studentData = await Promise.all(
+            myEnrollments.map(async (enrol) => {
+                const student = await ctx.db.get(enrol.studentId);
+                const course = courses.find(c => c._id === enrol.courseId);
+                return {
+                    id: enrol._id,
+                    name: student?.name || "Unknown",
+                    email: student?.email || "N/A",
+                    course: course?.courseCode || "N/A",
+                    level: student?.level || "N/A",
+                    status: student?.isBlocked ? "Inactive" : "Active"
+                };
+            })
+        );
+
         return {
-          id: enrol._id,
-          name: student?.name || "Unknown",
-          email: student?.email || "N/A",
-          course: course?.courseCode || "N/A",
-          level: student?.level || "N/A",
-          status: student?.isBlocked ? "Inactive" : "Active"
+            stats: {
+                assignedCourses: courses.length,
+                totalStudents: studentData.length,
+                assignments: myAssignments.length, // Updated from 0
+                assessments: 0, // Keep at 0 unless you have an assessments table
+            },
+            students: studentData,
+            courseList: ["All", ...courseCodes]
         };
-      })
-    );
-
-    return {
-      stats: {
-        assignedCourses: courses.length,
-        totalStudents: studentData.length,
-        assignments: 0, // Placeholder for future logic
-        assessments: 0,  // Placeholder for future logic
-      },
-      students: studentData,
-      courseList: ["All", ...courseCodes]
-    };
-  }
+    }
 });
 
 export const listLecturers = query({
@@ -117,3 +123,4 @@ export const getEnrolledStudents = query({
     return students.filter((s) => s !== null);
   },
 });
+

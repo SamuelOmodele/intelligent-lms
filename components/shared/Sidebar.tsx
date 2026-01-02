@@ -95,10 +95,11 @@ const Sidebar = ({ isSidebarOpen, setSidebarOpen }: TProps) => {
                     </Link>
                 </nav>
 
+                {openModal && 
                 <StudyModal
                     openModal={openModal}
                     setOpenModal={setOpenModal}
-                />
+                />}
 
                 {/* Logout with Shadcn AlertDialog */}
                 <div className="p-4 border-t border-blue-900">

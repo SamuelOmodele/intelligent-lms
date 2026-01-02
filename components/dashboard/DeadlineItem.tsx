@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
 
 type TDeadlineItem = {
   title: string;
@@ -16,11 +17,11 @@ const DeadlineItem = ({ title, date, urgent }: TDeadlineItem) => {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{date}</p>
             </div>
             
-            <div className={`shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${
+            <Link href={'/dashboard/assignments'} className={`shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 ${
                 urgent ? 'text-red-500' : 'text-slate-400'
             }`}>
                 <ArrowUpRight size={18} strokeWidth={3} />
-            </div>
+            </Link>
         </div>
     );
 }

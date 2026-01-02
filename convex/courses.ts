@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { ConvexError } from "convex/values";
@@ -304,7 +305,7 @@ export const getStudentCourses = query({
     const coursesWithLecturers = await Promise.all(
       enrollments.map(async (enrol) => {
         const course = await ctx.db.get(enrol.courseId);
-        
+
         if (!course) return null;
 
         // Fetch the lecturer's profile using the lecturerId in the course document
@@ -322,3 +323,83 @@ export const getStudentCourses = query({
   },
 });
 
+
+// 1. Get all courses (used in SelectCourse component)
+export const get = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("courses").collect();
+  },
+});
+
+// 2. Get specific course details
+export const getById = query({
+  args: { courseId: v.id("courses") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.courseId);
+  },
+});
+
+export const getStudentDashboardData = query({
+  args: { studentId: v.string() },
+  handler: async (ctx, args) => {
+    const studentId = args.studentId as Id<"users">;
+
+    const enrollments = await ctx.db
+      .query("enrollments")
+      .withIndex("by_student", (q) => q.eq("studentId", studentId))
+      .collect();
+
+    const courseIds = enrollments.map((e) => e.courseId);
+
+    const allAssignments = await Promise.all(
+      courseIds.map((courseId) =>
+        ctx.db
+          .query("assignments")
+          .withIndex("by_course", (q) => q.eq("courseId", courseId))
+          .collect()
+      )
+    );
+    const assignments = allAssignments.flat();
+
+    const submissions = await ctx.db
+      .query("submissions")
+      .filter((q) => q.eq(q.field("studentId"), studentId))
+      .collect();
+
+    const submittedAssignmentIds = new Set(submissions.map((s) => s.assignmentId));
+    const now = Date.now();
+
+    // Logic Fix: Handle both existing strings and new numbers
+    const getDueValue = (dateVal: any) => {
+        const parsed = Number(dateVal);
+        // If it's a timestamp string or number, parsed will be a valid number
+        // If it's an ISO string, parsed will be NaN, so we use new Date()
+        return isNaN(parsed) ? new Date(dateVal).getTime() : parsed;
+    };
+
+    const pending = assignments.filter(a => {
+      const due = getDueValue(a.dueDate);
+      return !submittedAssignmentIds.has(a._id) && due > now;
+    });
+
+    const missed = assignments.filter(a => {
+      const due = getDueValue(a.dueDate);
+      return !submittedAssignmentIds.has(a._id) && due < now;
+    });
+
+    return {
+      courseCount: enrollments.length,
+      pendingCount: pending.length,
+      submittedCount: submittedAssignmentIds.size,
+      missedCount: missed.length,
+      upcomingDeadlines: pending
+        .sort((a, b) => getDueValue(a.dueDate) - getDueValue(b.dueDate))
+        .slice(0, 3)
+        .map(a => ({
+            ...a,
+            dueDate: getDueValue(a.dueDate) // Ensure frontend receives a number
+        }))
+    };
+  },
+});

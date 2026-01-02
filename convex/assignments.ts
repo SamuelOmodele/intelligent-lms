@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
@@ -10,12 +11,18 @@ export const createAssignment = mutation({
     courseId: v.id("courses"),
     title: v.string(),
     instructions: v.string(),
-    dueDate: v.string(),
+    dueDate: v.string(), // Input is string from your form/UI
     status: v.string(),
-    attachmentId: v.optional(v.string()), // Store the Convex storageId
+    attachmentId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("assignments", args);
+    // CONVERT TO NUMBER HERE
+    const timestamp = new Date(args.dueDate).getTime();
+    
+    return await ctx.db.insert("assignments", {
+      ...args,
+      dueDate: timestamp as any, // Store as number
+    });
   },
 });
 
@@ -29,7 +36,14 @@ export const updateAssignment = mutation({
   },
   handler: async (ctx, args) => {
     const { assignmentId, ...rest } = args;
-    await ctx.db.patch(assignmentId, rest);
+    
+    // CONVERT TO NUMBER HERE
+    const timestamp = new Date(args.dueDate).getTime();
+
+    await ctx.db.patch(assignmentId, {
+      ...rest,
+      dueDate: timestamp as any,
+    });
   },
 });
 

@@ -13,6 +13,7 @@ import type * as courses from "../courses.js";
 import type * as dashboard from "../dashboard.js";
 import type * as departments from "../departments.js";
 import type * as lecturers from "../lecturers.js";
+import type * as lessons from "../lessons.js";
 import type * as students from "../students.js";
 import type * as submissions from "../submissions.js";
 import type * as users from "../users.js";
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   dashboard: typeof dashboard;
   departments: typeof departments;
   lecturers: typeof lecturers;
+  lessons: typeof lessons;
   students: typeof students;
   submissions: typeof submissions;
   users: typeof users;

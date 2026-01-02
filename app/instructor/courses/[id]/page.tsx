@@ -164,7 +164,7 @@ export default function InstructorCourseClassroom() {
             <StudyModal 
                 openModal={openStudyModal} 
                 setOpenModal={setOpenStudyModal} 
-                initialCourseCode={courseData.courseCode} 
+                activeCourse={courseData} 
                 activeLesson={activeLesson} 
             />
         </div>

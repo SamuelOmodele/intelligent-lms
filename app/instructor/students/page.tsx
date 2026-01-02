@@ -25,41 +25,41 @@ import {
 
 export default function InstructorStudentsPage() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [courseFilter, setCourseFilter] = useState("All Courses");
+    const [courseFilter, setCourseFilter] = useState(""); // Default to empty, will be set once data loads
     const [lecturerId, setLecturerId] = useState<Id<"users"> | null>(null);
 
-    // 1. Get Lecturer ID from Local Storage on mount
     useEffect(() => {
-        const storedId = localStorage.getItem("userId"); // Ensure this matches your storage key
+        const storedId = localStorage.getItem("userId");
         if (storedId) {
             setLecturerId(storedId as Id<"users">);
         }
     }, []);
 
-    // 2. Fetch Data using the ID (only if ID exists)
     const allStudents = useQuery(
         api.students.getInstructorStudents, 
         lecturerId ? { lecturerId } : "skip"
     );
 
-    // 3. Filter logic applied to backend data
+    // Extract dynamic courses and set the default filter to the first one
+    const uniqueCourses = Array.from(new Set(allStudents?.map(s => s.course).filter(Boolean))) as string[];
+
+    useEffect(() => {
+        if (uniqueCourses.length > 0 && !courseFilter) {
+            setCourseFilter(uniqueCourses[0]);
+        }
+    }, [uniqueCourses, courseFilter]);
+
+    // Filter logic: Only matches selected course and search term
     const filteredStudents = allStudents?.filter(student => {
         const matchesSearch = 
             student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             student.matric.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const matchesCourse = courseFilter === "All Courses" || student.course === courseFilter;
+        const matchesCourse = student.course === courseFilter;
         
         return matchesSearch && matchesCourse;
     }) ?? [];
 
-    // 4. Extract dynamic courses for the filter dropdown
-    const uniqueCourses = [
-        "All Courses", 
-        ...new Set(allStudents?.map(s => s.course).filter(Boolean))
-    ];
-
-    // 5. CSV Export Functionality
     const downloadCSV = () => {
         if (filteredStudents.length === 0) return toast.error("No data to download");
         
@@ -72,14 +72,13 @@ export default function InstructorStudentsPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `students_directory_${new Date().toLocaleDateString()}.csv`;
+        a.download = `${courseFilter}_students_${new Date().toLocaleDateString()}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         toast.success("CSV Downloaded successfully");
     };
 
-    // Loading State
     if (allStudents === undefined || !lecturerId) {
         return (
             <div className="h-96 flex flex-col items-center justify-center text-slate-400 gap-3">
@@ -93,14 +92,13 @@ export default function InstructorStudentsPage() {
 
     return (
         <div className="max-w-7xl mx-auto ">
-            {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-black text-[#002147] flex items-center gap-3">
                         Students Directory
                     </h1>
                     <p className="text-slate-500 font-medium mt-1">
-                        Viewing all students currently enrolled in your courses.
+                        Viewing students enrolled in <span className="text-[#002147] font-bold">{courseFilter || "your courses"}</span>.
                     </p>
                 </div>
                 <button 
@@ -111,13 +109,12 @@ export default function InstructorStudentsPage() {
                 </button>
             </div>
 
-            {/* Table Controls */}
             <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input
                         type="text"
-                        placeholder="Search by name or matric number..."
+                        placeholder="Search name or matric..."
                         className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:ring-2 ring-blue-100 transition-all font-medium"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -126,13 +123,14 @@ export default function InstructorStudentsPage() {
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="flex items-center gap-2 text-xs font-black uppercase text-slate-400 mr-2">
-                        <Filter size={14} /> Filter:
+                        <Filter size={14} /> Course:
                     </div>
                     <select
                         className="bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-sm font-bold text-[#002147] outline-none cursor-pointer hover:bg-slate-100 transition-colors"
                         value={courseFilter}
                         onChange={(e) => setCourseFilter(e.target.value)}
                     >
+                        {uniqueCourses.length === 0 && <option value="">No Courses Found</option>}
                         {uniqueCourses.map(course => (
                             <option key={course} value={course}>{course}</option>
                         ))}
@@ -140,7 +138,6 @@ export default function InstructorStudentsPage() {
                 </div>
             </div>
 
-            {/* Students Table */}
             <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -207,7 +204,7 @@ export default function InstructorStudentsPage() {
                                     <td colSpan={6} className="px-8 py-20 text-center">
                                         <div className="flex flex-col items-center">
                                             <Users size={48} className="text-slate-200 mb-4" />
-                                            <p className="text-slate-400 font-bold italic">No students found matching your filters.</p>
+                                            <p className="text-slate-400 font-bold italic">No students found for this course.</p>
                                         </div>
                                     </td>
                                 </tr>

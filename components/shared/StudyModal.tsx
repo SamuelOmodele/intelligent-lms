@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useState, useEffect } from 'react';
@@ -7,41 +7,48 @@ import { api } from '@/convex/_generated/api';
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '../ui/dialog';
 import { FileText, Send, Sparkles, X, Loader2 } from 'lucide-react';
 import { DialogOverlay } from '@radix-ui/react-dialog';
+import SelectCourse from '../study-modal/SelectCourse';
+import SelectLesson from '../study-modal/SelectLesson';
 
 interface StudyModalProps {
     openModal: boolean;
     setOpenModal: (open: boolean) => void;
     initialCourseCode?: string;
-    activeLesson: any; // This now contains our Convex lesson object
+    activeCourse?: any;
+    activeLesson?: any;
 }
 
-const StudyModal = ({ openModal, setOpenModal, initialCourseCode, activeLesson }: StudyModalProps) => {
+const StudyModal = ({ openModal, setOpenModal, initialCourseCode, activeCourse, activeLesson }: StudyModalProps) => {
     const [step, setStep] = useState<'SELECT_COURSE' | 'SELECT_LESSON' | 'STUDY'>('SELECT_COURSE');
-    const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
-    const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+    
+    // Initialize with props if provided, otherwise null
+    const [selectedLesson, setSelectedLesson] = useState<any>(null);
+    const [selectedCourse, setSelectedCourse] = useState<any>(null);
     const [inputValue, setInputValue] = useState('');
 
-    // --- CONVEX DATA FETCHING ---
-    // Fetch the actual file URL from the storageId
+    // Determine which lesson/storageId to use for the PDF
+    const currentLesson = selectedLesson || activeLesson;
+    
     const pdfUrl = useQuery(api.courses.getFileUrl, 
-        activeLesson?.storageId ? { storageId: activeLesson.storageId } : "skip"
+        currentLesson?.storageId ? { storageId: currentLesson.storageId } : "skip"
     );
 
+    // Sync state with props and handle step transitions
     useEffect(() => {
         if (openModal) {
-            if (activeLesson) {
-                // If we are coming from the LessonsTab, jump straight to STUDY
-                setSelectedCourse(initialCourseCode || "Course");
-                setSelectedLesson(activeLesson.title);
-                setStep('STUDY');
-            } else if (initialCourseCode) {
-                setSelectedCourse(initialCourseCode);
+            // Use activeCourse/activeLesson from props if they exist, else use state
+            const effectiveCourse = activeCourse || selectedCourse;
+            const effectiveLesson = activeLesson || selectedLesson;
+
+            if (!effectiveCourse) {
+                setStep('SELECT_COURSE');
+            } else if (!effectiveLesson) {
                 setStep('SELECT_LESSON');
             } else {
-                setStep('SELECT_COURSE');
+                setStep('STUDY');
             }
         }
-    }, [openModal, initialCourseCode, activeLesson]);
+    }, [openModal, selectedCourse, selectedLesson, activeCourse, activeLesson]);
 
     const [messages, setMessages] = useState([
         { role: 'assistant', content: `Hello! I've loaded the materials. What part should we dive into first?` }
@@ -51,7 +58,6 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, activeLesson }
         if (!inputValue.trim()) return;
         setMessages([...messages, { role: 'user', content: inputValue }]);
         setInputValue('');
-        // AI response logic would go here
     };
 
     return (
@@ -60,20 +66,31 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, activeLesson }
 
             <DialogContent className={`${step === 'STUDY' ? 'max-w-[100vw]! w-screen h-screen' : 'max-w-md'} p-0 gap-0 border-none outline-none overflow-hidden transition-all duration-300`}>
                 
-                {/* Steps for Selection (Course/Lesson) remain similar but logic is connected to your activeLesson */}
-                {step !== 'STUDY' && (
+                {step === 'SELECT_COURSE' && (
                     <div className="bg-white p-6 rounded-3xl">
                          <DialogTitle className="text-2xl font-black text-[#002147] mb-4">
-                            {step === 'SELECT_COURSE' ? 'Select a Course' : 'Select Topic'}
+                            Select a Course
                          </DialogTitle>
-                         <p className="text-center text-slate-500 py-10">Use the Lesson Tab to trigger the study view directly.</p>
+                         <SelectCourse selectedCourse={selectedCourse} setSelectedCourse={setSelectedCourse} />
                     </div>
                 )}
 
-                {/* STEP 3: STUDY VIEW (Now Functional) */}
+                {step === 'SELECT_LESSON' && (
+                    <div className="bg-white p-6 rounded-3xl">
+                         <DialogTitle className="text-2xl font-black text-[#002147] mb-4">
+                            Select a Lesson
+                         </DialogTitle>
+                         <SelectLesson 
+                            courseId={(activeCourse?._id || selectedCourse?._id || selectedCourse?.id)} 
+                            selectedLesson={selectedLesson} 
+                            setSelectedLesson={setSelectedLesson} 
+                        />
+                    </div>
+                )}
+
                 {step === 'STUDY' && (
                     <div className="flex h-full w-full overflow-hidden">
-                        <DialogTitle className="sr-only">Studying {selectedLesson}</DialogTitle>
+                        <DialogTitle className="sr-only">Studying {currentLesson?.title}</DialogTitle>
                         
                         {/* Left Side: PDF Viewer */}
                         <div className="flex-[1.5] bg-slate-800 flex flex-col">
@@ -84,10 +101,10 @@ const StudyModal = ({ openModal, setOpenModal, initialCourseCode, activeLesson }
                                     </div>
                                     <div>
                                         <h2 className="font-bold text-[#002147] text-sm leading-tight">
-                                            {activeLesson?.title || selectedLesson}
+                                            {currentLesson?.title}
                                         </h2>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                                            Week {activeLesson?.week} • {initialCourseCode}
+                                            Week {currentLesson?.week} • {initialCourseCode || activeCourse?.courseCode}
                                         </p>
                                     </div>
                                 </div>
