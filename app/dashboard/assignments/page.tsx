@@ -104,7 +104,7 @@ export default function GeneralAssignmentsPage() {
                       <span className="text-[10px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded uppercase tracking-wider">
                         {asgn.courseCode}
                       </span>
-                      {filter === 'Pending' && isUrgent(asgn.dueDate) && (
+                      {filter === 'Pending' && isUrgent(new Date(asgn.dueDate).toLocaleDateString()) && (
                         <span className="flex items-center gap-1 text-[10px] font-black text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded uppercase tracking-wider">
                           <AlertCircle size={12} /> Urgent
                         </span>
@@ -115,7 +115,7 @@ export default function GeneralAssignmentsPage() {
                     </h3>
                     <div className="flex items-center gap-3">
                       <p className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-tight ${
-                        isUrgent(asgn.dueDate) && filter === 'Pending' ? 'text-red-500' : 'text-slate-400'
+                        isUrgent(new Date(asgn.dueDate).toLocaleDateString()) && filter === 'Pending' ? 'text-red-500' : 'text-slate-400'
                       }`}>
                         <Clock size={14} /> 
                         Due: {new Date(asgn.dueDate).toLocaleDateString('en-GB', { 
