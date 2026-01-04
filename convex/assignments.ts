@@ -11,17 +11,16 @@ export const createAssignment = mutation({
     courseId: v.id("courses"),
     title: v.string(),
     instructions: v.string(),
-    dueDate: v.string(), // Input is string from your form/UI
+    dueDate: v.string(), 
     status: v.string(),
     attachmentId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // CONVERT TO NUMBER HERE
     const timestamp = new Date(args.dueDate).getTime();
     
     return await ctx.db.insert("assignments", {
       ...args,
-      dueDate: timestamp as any, // Store as number
+      dueDate: timestamp, // Now matches schema number
     });
   },
 });
@@ -102,7 +101,7 @@ export const getEnrolledAssignments = query({
     );
 
     // Sort by due date (closest first)
-    return results.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    return results.sort((a, b) => a.dueDate - b.dueDate);
   },
 });
 

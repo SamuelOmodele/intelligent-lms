@@ -230,15 +230,13 @@ function AssignmentsTab({ assignments, courseId }: any) {
             </Dialog>
 
             {assignments.map((assignment: any) => {
-                // 1. Parse the due date and current date
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Reset time to compare just the date
-
-                const dueDate = new Date(assignment.dueDate);
-
-                // 2. Determine if it's expired
-                const isExpired = today > dueDate;
+                const today = new Date().getTime();
+                // assignment.dueDate is now a timestamp (number)
+                const isExpired = today > assignment.dueDate;
                 const statusText = isExpired ? 'Closed' : 'Open';
+
+                // Format the timestamp for display
+                const displayDate = new Date(assignment.dueDate).toLocaleDateString();
 
                 return (
                     <div key={assignment._id} className="bg-white rounded-[10px] border border-slate-200 p-6 flex justify-between items-center group hover:border-[#fdb813] transition-all shadow-sm">
@@ -258,7 +256,7 @@ function AssignmentsTab({ assignments, courseId }: any) {
                             </div>
                             <h3 className="text-lg font-black text-[#002147]">{assignment.title}</h3>
                             <p className="text-xs text-slate-400 font-bold mt-1 uppercase flex items-center gap-1.5">
-                                <Clock size={14} /> Due {assignment.dueDate}
+                                <Clock size={14} /> Due {displayDate}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">

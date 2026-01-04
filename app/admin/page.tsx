@@ -131,7 +131,7 @@ function StatCard({ title, count, growth, icon }: any) {
         <div className="bg-white p-6 rounded-[10px] border border-slate-200 shadow-sm hover:border-[#fdb813] transition-colors group">
             <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-[#fdb813]/10 transition-colors">{icon}</div>
-                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{growth}</span>
+                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">Live</span>
             </div>
             <p className="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">{title}</p>
             <h2 className="text-2xl font-black text-[#002147]">{count}</h2>

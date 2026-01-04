@@ -10,11 +10,10 @@ import {
   Lock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// import { useQuery } from 'convex/react';
-// import { api } from '@/convex/_generated/api';
+import logo from '@/public/images/ui_logo.png'
+import Image from 'next/image';
 
 export default function UniversityLMS() {
-  // const tasks = useQuery(api.tasks.get);
 
   const router = useRouter();
   return (
@@ -34,8 +33,9 @@ export default function UniversityLMS() {
       <nav className="font-nunito sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between h-20 items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-[#002147] p-2 rounded">
-              <GraduationCap className="h-8 w-8 text-[#fdb813]" />
+            <div className="">
+              {/* <GraduationCap className="h-8 w-8 text-[#fdb813]" /> */}
+              <Image src={logo} alt='logo' height={30} width={30} />
             </div>
             <div>
               <h1 className="text-xl font-black text-[#002147] leading-none uppercase">PremierLms</h1>
@@ -67,22 +67,16 @@ export default function UniversityLMS() {
               submit assignments, and track your academic performance in one unified platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-10 py-4 bg-[#002147] text-white rounded-md font-bold hover:shadow-lg transition-all">
+              <button onClick={() => router.push('/login')} className="px-10 py-4 bg-[#002147] text-white rounded-md font-bold hover:shadow-lg transition-all">
                 Access My Courses
               </button>
-              <button className="px-10 py-4 bg-white border-2 border-[#002147] text-[#002147] rounded-md font-bold hover:bg-slate-50 transition-all">
+              <button onClick={() => router.push('/login')} className="px-10 py-4 bg-white border-2 border-[#002147] text-[#002147] rounded-md font-bold hover:bg-slate-50 transition-all">
                 Staff Directory
               </button>
             </div>
           </div>
         </div>
       </header>
-
-      {/* <div>
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-          {tasks?.map(({ _id, text }) => <div key={_id}>{text}</div>)}
-        </main>
-      </div> */}
 
       {/* --- Key Modules Section --- */}
       <section className="py-24">

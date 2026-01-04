@@ -62,7 +62,7 @@ export default defineSchema({
     title: v.string(),
     instructions: v.string(),
     courseId: v.id("courses"),
-    dueDate: v.string(),
+    dueDate: v.number(),
     attachmentId: v.optional(v.string()),
     status: v.string(), // "Pending" or "Closed"
   }).index("by_course", ["courseId"]),
