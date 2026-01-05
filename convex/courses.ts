@@ -164,7 +164,7 @@ export const createLesson = mutation({
     courseId: v.id("courses"),
     storageId: v.id("_storage"),
     format: v.string(),
-    lecture_id: v.optional(v.number()), // Add this argument
+    lecture_id: v.optional(v.string()), // Add this argument
   },
   handler: async (ctx, args) => {
     await ctx.db.insert("lessons", args);

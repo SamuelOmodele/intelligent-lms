@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -11,13 +11,14 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowDownToLine, BookText, Plus, Upload, Loader2, Trash2 } from "lucide-react";
+import { ArrowDownToLine, BookText, Plus, Upload, Loader2, Trash2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: any) {
     const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [open, setOpen] = useState(false);
+    const [error, setError] = useState<string | null>(null); // New Error State
 
     // Mutations
     const generateUploadUrl = useMutation(api.courses.generateUploadUrl);
@@ -73,6 +74,7 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
     const handlePublishLesson = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsUploading(true);
+        setError(null); // Reset error on new attempt
 
         const formData = new FormData(e.currentTarget);
         const title = formData.get("title") as string;
@@ -102,7 +104,7 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                 body: externalFormData, // Browser automatically sets Content-Type to multipart/form-data
             });
 
-            if (!externalResponse.ok) throw new Error("External upload failed");
+            if (!externalResponse.ok) throw new Error("AI Embedding service failed, Please try again.");
 
             // This is the lecture_id returned by your API
             const { lecture_id } = await externalResponse.json();
@@ -125,14 +127,15 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                 courseId,
                 storageId,
                 format: "PDF",
-                lecture_id: Number(lecture_id), // Store the integer from step 1
+                lecture_id: lecture_id, // Store the integer from step 1
             });
 
             toast.success("Lesson published successfully!");
             setOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast.error("Failed to upload lesson. Check console for details.");
+            setError(error.message || "An unexpected error occurred");
+            toast.error("Failed to upload lesson.");
         } finally {
             setIsUploading(false);
         }
@@ -170,6 +173,12 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
         }
     };
 
+    useEffect(() => {
+        if (!open) {
+            setError(null);
+        }
+    }, [open])
+
     return (
         <div className="space-y-4">
             <div className="flex justify-end">
@@ -183,7 +192,14 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                         <DialogHeader>
                             <DialogTitle className="font-black text-[#002147]">Create New Lesson</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handlePublishLesson} className="space-y-4 mt-4">
+                        {/* Error Alert Display */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 text-sm animate-in fade-in zoom-in duration-200">
+                                <AlertCircle size={18} className="shrink-0" />
+                                <p className="font-medium">{error}</p>
+                            </div>
+                        )}
+                        <form onSubmit={handlePublishLesson} className={`space-y-4 ${error ? 'mt-0' : 'mt-4'}`}>
                             <div>
                                 <label className="text-xs font-semibold uppercase text-slate-600">Lesson Title</label>
                                 <input
@@ -207,12 +223,12 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                             <label htmlFor="upload_element" className="block my-6">
                                 <div className="cursor-pointer border-2 border-dashed border-slate-200 p-6 rounded-2xl text-center relative">
                                     <Upload className="mx-auto text-slate-300 mb-2" />
-                                    <p className="text-xs font-bold text-slate-500 mb-2">Upload Lesson PDF/Material</p>
+                                    <p className="text-xs font-bold text-slate-500 mb-2">Upload Lesson Material (.doc, .docx)</p>
                                     <input
                                         name="file"
                                         id="upload_element"
                                         type="file"
-                                        accept=".pdf"
+                                        accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                         required
                                         className="text-xs text-slate-400 ml-auto"
                                     />
