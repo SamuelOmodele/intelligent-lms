@@ -23,9 +23,52 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
     const generateUploadUrl = useMutation(api.courses.generateUploadUrl);
     const createLesson = useMutation(api.courses.createLesson);
     const deleteLesson = useMutation(api.courses.deleteLesson);
-    
+
     // For downloading, we need a way to get the file URL
     const getDownloadUrl = useMutation(api.courses.getDownloadUrl);
+
+    // const handlePublishLesson = async (e: React.FormEvent<HTMLFormElement>) => {
+    //     e.preventDefault();
+    //     setIsUploading(true);
+
+    //     const formData = new FormData(e.currentTarget);
+    //     const title = formData.get("title") as string;
+    //     const week = parseInt(formData.get("week") as string);
+    //     const fileInput = (e.currentTarget.elements.namedItem("file") as HTMLInputElement);
+    //     const file = fileInput.files?.[0];
+
+    //     if (!title || isNaN(week) || !file) {
+    //         toast.error("Please fill all fields and select a PDF");
+    //         setIsUploading(false);
+    //         return;
+    //     }
+
+    //     try {
+    //         const postUrl = await generateUploadUrl();
+    //         const result = await fetch(postUrl, {
+    //             method: "POST",
+    //             headers: { "Content-Type": file.type },
+    //             body: file,
+    //         });
+    //         const { storageId } = await result.json();
+
+    //         await createLesson({
+    //             title,
+    //             week,
+    //             courseId,
+    //             storageId,
+    //             format: "PDF",
+    //         });
+
+    //         toast.success("Lesson published successfully!");
+    //         setOpen(false);
+    //     } catch (error) {
+    //         console.error(error);
+    //         toast.error("Failed to upload lesson");
+    //     } finally {
+    //         setIsUploading(false);
+    //     }
+    // };
 
     const handlePublishLesson = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -37,6 +80,11 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
         const fileInput = (e.currentTarget.elements.namedItem("file") as HTMLInputElement);
         const file = fileInput.files?.[0];
 
+        // Assuming courseId is passed as a prop, we might need the lecturerId 
+        // You may need to pass the lecturerId from the parent component or find it in the course data
+        // For this example, I'll assume you have access to it.
+        const lecturerIdForExternal = 1; // REPLACE THIS with actual lecturer integer ID
+
         if (!title || isNaN(week) || !file) {
             toast.error("Please fill all fields and select a PDF");
             setIsUploading(false);
@@ -44,27 +92,47 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
         }
 
         try {
+            // --- STEP 1: EXTERNAL ENDPOINT UPLOAD ---
+            const externalFormData = new FormData();
+            externalFormData.append("lecturer_id", lecturerIdForExternal.toString());
+            externalFormData.append("file", file);
+
+            const externalResponse = await fetch("https://jerold-unsuperior-fonda.ngrok-free.dev/bot/embed-lecture-note/", {
+                method: "POST",
+                body: externalFormData, // Browser automatically sets Content-Type to multipart/form-data
+            });
+
+            if (!externalResponse.ok) throw new Error("External upload failed");
+
+            // This is the lecture_id returned by your API
+            const { lecture_id } = await externalResponse.json();
+
+
+            // --- STEP 2: CONVEX STORAGE UPLOAD (Normal process) ---
             const postUrl = await generateUploadUrl();
-            const result = await fetch(postUrl, {
+            const convexResult = await fetch(postUrl, {
                 method: "POST",
                 headers: { "Content-Type": file.type },
                 body: file,
             });
-            const { storageId } = await result.json();
+            const { storageId } = await convexResult.json();
 
+
+            // --- STEP 3: CREATE LESSON IN CONVEX ---
             await createLesson({
                 title,
                 week,
                 courseId,
                 storageId,
                 format: "PDF",
+                lecture_id: Number(lecture_id), // Store the integer from step 1
             });
 
             toast.success("Lesson published successfully!");
             setOpen(false);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to upload lesson");
+            toast.error("Failed to upload lesson. Check console for details.");
         } finally {
             setIsUploading(false);
         }
@@ -72,7 +140,7 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
 
     const handleDelete = async (lessonId: any, storageId: string) => {
         if (!confirm("Are you sure you want to delete this lesson? This cannot be undone.")) return;
-        
+
         setIsDeleting(lessonId);
         try {
             await deleteLesson({ lessonId, storageId });
@@ -89,11 +157,11 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
         try {
             const url = await getDownloadUrl({ storageId });
             if (!url) throw new Error("Could not generate download link");
-            
+
             // Create a temporary link to trigger the download
             const link = document.createElement('a');
             link.href = url;
-            link.download = fileName; 
+            link.download = fileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -185,16 +253,16 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                             >
                                 Preview
                             </button>
-                            
+
                             <div className="flex items-center gap-2 border-l pl-3 border-slate-100">
-                                <button 
+                                <button
                                     onClick={() => handleDownload(lesson.storageId, lesson.title)}
                                     title="Download Material"
                                 >
                                     <ArrowDownToLine size={18} className='text-slate-400 hover:text-[#002147] cursor-pointer transition-colors' />
                                 </button>
-                                
-                                <button 
+
+                                <button
                                     onClick={() => handleDelete(lesson._id, lesson.storageId)}
                                     disabled={isDeleting === lesson._id}
                                     className="text-slate-400 cursor-pointer hover:text-red-600 transition-colors"

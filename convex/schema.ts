@@ -56,6 +56,7 @@ export default defineSchema({
     courseId: v.id("courses"),
     storageId: v.optional(v.id("_storage")), // For PDF uploads
     format: v.string(), // e.g., "PDF" or "Video"
+    lecture_id: v.optional(v.number()), // Add this field
   }).index("by_course", ["courseId"]),
 
   assignments: defineTable({
