@@ -18,63 +18,20 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
     const [isUploading, setIsUploading] = useState(false);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [open, setOpen] = useState(false);
-    const [error, setError] = useState<string | null>(null); // New Error State
+    const [error, setError] = useState<string | null>(null);
 
     // Mutations
     const generateUploadUrl = useMutation(api.courses.generateUploadUrl);
     const createLesson = useMutation(api.courses.createLesson);
     const deleteLesson = useMutation(api.courses.deleteLesson);
 
-    // For downloading, we need a way to get the file URL
+    // For downloading
     const getDownloadUrl = useMutation(api.courses.getDownloadUrl);
-
-    // const handlePublishLesson = async (e: React.FormEvent<HTMLFormElement>) => {
-    //     e.preventDefault();
-    //     setIsUploading(true);
-
-    //     const formData = new FormData(e.currentTarget);
-    //     const title = formData.get("title") as string;
-    //     const week = parseInt(formData.get("week") as string);
-    //     const fileInput = (e.currentTarget.elements.namedItem("file") as HTMLInputElement);
-    //     const file = fileInput.files?.[0];
-
-    //     if (!title || isNaN(week) || !file) {
-    //         toast.error("Please fill all fields and select a PDF");
-    //         setIsUploading(false);
-    //         return;
-    //     }
-
-    //     try {
-    //         const postUrl = await generateUploadUrl();
-    //         const result = await fetch(postUrl, {
-    //             method: "POST",
-    //             headers: { "Content-Type": file.type },
-    //             body: file,
-    //         });
-    //         const { storageId } = await result.json();
-
-    //         await createLesson({
-    //             title,
-    //             week,
-    //             courseId,
-    //             storageId,
-    //             format: "PDF",
-    //         });
-
-    //         toast.success("Lesson published successfully!");
-    //         setOpen(false);
-    //     } catch (error) {
-    //         console.error(error);
-    //         toast.error("Failed to upload lesson");
-    //     } finally {
-    //         setIsUploading(false);
-    //     }
-    // };
 
     const handlePublishLesson = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsUploading(true);
-        setError(null); // Reset error on new attempt
+        setError(null);
 
         const formData = new FormData(e.currentTarget);
         const title = formData.get("title") as string;
@@ -82,16 +39,16 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
         const fileInput = (e.currentTarget.elements.namedItem("file") as HTMLInputElement);
         const file = fileInput.files?.[0];
 
-        // Assuming courseId is passed as a prop, we might need the lecturerId 
-        // You may need to pass the lecturerId from the parent component or find it in the course data
-        // For this example, I'll assume you have access to it.
         const lecturerIdForExternal = 1; // REPLACE THIS with actual lecturer integer ID
 
         if (!title || isNaN(week) || !file) {
-            toast.error("Please fill all fields and select a PDF");
+            toast.error("Please fill all fields and select a valid file");
             setIsUploading(false);
             return;
         }
+
+        // Detect Format (DOCX or PDF)
+        const fileExtension = file.name.split('.').pop()?.toUpperCase() || "PDF";
 
         try {
             // --- STEP 1: EXTERNAL ENDPOINT UPLOAD ---
@@ -101,16 +58,14 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
 
             const externalResponse = await fetch("https://jerold-unsuperior-fonda.ngrok-free.dev/bot/embed-lecture-note/", {
                 method: "POST",
-                body: externalFormData, // Browser automatically sets Content-Type to multipart/form-data
+                body: externalFormData, 
             });
 
             if (!externalResponse.ok) throw new Error("AI Embedding service failed, Please try again.");
 
-            // This is the lecture_id returned by your API
             const { lecture_id } = await externalResponse.json();
 
-
-            // --- STEP 2: CONVEX STORAGE UPLOAD (Normal process) ---
+            // --- STEP 2: CONVEX STORAGE UPLOAD ---
             const postUrl = await generateUploadUrl();
             const convexResult = await fetch(postUrl, {
                 method: "POST",
@@ -119,15 +74,14 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
             });
             const { storageId } = await convexResult.json();
 
-
             // --- STEP 3: CREATE LESSON IN CONVEX ---
             await createLesson({
                 title,
                 week,
                 courseId,
                 storageId,
-                format: "PDF",
-                lecture_id: lecture_id, // Store the integer from step 1
+                format: fileExtension, // Dynamically set to DOCX, DOC, or PDF
+                lecture_id: lecture_id,
             });
 
             toast.success("Lesson published successfully!");
@@ -161,7 +115,6 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
             const url = await getDownloadUrl({ storageId });
             if (!url) throw new Error("Could not generate download link");
 
-            // Create a temporary link to trigger the download
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
@@ -192,7 +145,6 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                         <DialogHeader>
                             <DialogTitle className="font-black text-[#002147]">Create New Lesson</DialogTitle>
                         </DialogHeader>
-                        {/* Error Alert Display */}
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3 text-sm animate-in fade-in zoom-in duration-200">
                                 <AlertCircle size={18} className="shrink-0" />
@@ -223,12 +175,12 @@ function LessonsTab({ lessons, courseId, setOpenStudyModal, setActiveLesson }: a
                             <label htmlFor="upload_element" className="block my-6">
                                 <div className="cursor-pointer border-2 border-dashed border-slate-200 p-6 rounded-2xl text-center relative">
                                     <Upload className="mx-auto text-slate-300 mb-2" />
-                                    <p className="text-xs font-bold text-slate-500 mb-2">Upload Lesson Material (.doc, .docx)</p>
+                                    <p className="text-xs font-bold text-slate-500 mb-2">Upload Lesson Material (PDF, DOC, DOCX)</p>
                                     <input
                                         name="file"
                                         id="upload_element"
                                         type="file"
-                                        accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                         required
                                         className="text-xs text-slate-400 ml-auto"
                                     />

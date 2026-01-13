@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -11,7 +10,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "../ui/dialog";
-import { FileText, Send, Sparkles, X, Loader2, ExternalLink } from "lucide-react";
+import { FileText, Send, Sparkles, X, Loader2 } from "lucide-react";
 import { DialogOverlay } from "@radix-ui/react-dialog";
 import SelectCourse from "../study-modal/SelectCourse";
 import SelectLesson from "../study-modal/SelectLesson";
@@ -48,14 +47,16 @@ const StudyModal = ({
     currentLesson?.storageId ? { storageId: currentLesson.storageId } : "skip"
   );
 
-  /** 🔹 Prepare Document Viewer Data */
   const docs = useMemo(() => {
+    // If fileUrl is null or the query hasn't finished, return an empty array
     if (!fileUrl) return [];
+
     const extension = currentLesson?.format?.toLowerCase().replace('.', '') || "pdf";
-    return [{ 
-        uri: fileUrl, 
-        fileName: currentLesson?.title || "Lesson Material",
-        fileType: extension 
+
+    return [{
+      uri: fileUrl,
+      fileName: currentLesson?.title || "Lesson Material",
+      fileType: extension
     }];
   }, [fileUrl, currentLesson]);
 
@@ -83,7 +84,7 @@ const StudyModal = ({
 
     const userQuery = inputValue.trim();
     const newMessages = [...messages, { role: "user", content: userQuery }];
-    
+
     setMessages(newMessages);
     setInputValue("");
     setIsBotLoading(true);
@@ -101,7 +102,7 @@ const StudyModal = ({
       if (!response.ok) throw new Error("Failed to get response");
 
       const data = await response.json();
-      
+
       // Adjust 'data.response' based on your exact API response structure
       setMessages([...newMessages, { role: "assistant", content: data.response || data.answer || "I've processed that request." }]);
     } catch (error) {
@@ -117,9 +118,8 @@ const StudyModal = ({
       <DialogOverlay className="fixed inset-0 z-50 bg-black/60" />
 
       <DialogContent
-        className={`${
-          step === "STUDY" ? "max-w-[100vw]! w-screen h-screen" : "max-w-md"
-        } p-0 gap-0 border-none outline-none overflow-hidden transition-all duration-300`}
+        className={`${step === "STUDY" ? "max-w-[100vw]! w-screen h-screen" : "max-w-md"
+          } p-0 gap-0 border-none outline-none overflow-hidden transition-all duration-300`}
       >
         {step === "SELECT_COURSE" && (
           <div className="bg-white p-6 rounded-3xl">
@@ -159,16 +159,14 @@ const StudyModal = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <a href={fileUrl} target="_blank" rel="noreferrer" className="p-2 hover:bg-slate-100 rounded-full text-slate-400">
-                    <ExternalLink size={16} />
-                  </a>
+
                   <DialogClose className="flex items-center text-[12px] gap-2 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full font-bold cursor-pointer hover:bg-red-50 hover:text-red-600 transition-colors uppercase">
                     Exit <X size={16} />
                   </DialogClose>
                 </div>
               </div>
 
-              <div className="flex-1 relative">
+              <div className="flex-1 relative h-full">
                 {!fileUrl ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <Loader2 className="animate-spin mb-2 text-[#002147]" />
@@ -176,9 +174,10 @@ const StudyModal = ({
                   </div>
                 ) : (
                   <DocViewer
+                    key={fileUrl}
                     documents={docs}
                     pluginRenderers={DocViewerRenderers}
-                    className="h-full w-full"
+                    className="h-[500px] w-full"
                     config={{ header: { disableHeader: true } }}
                     theme={{ primary: "#002147", textPrimary: "#002147" }}
                   />
@@ -206,8 +205,7 @@ const StudyModal = ({
               <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/30">
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${
-                        msg.role === "user" ? "bg-[#002147] text-white rounded-tr-none" : "bg-white text-slate-700 border border-slate-100 rounded-tl-none"
+                    <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.role === "user" ? "bg-[#002147] text-white rounded-tr-none" : "bg-white text-slate-700 border border-slate-100 rounded-tl-none"
                       }`}
                     >
                       {msg.content}
