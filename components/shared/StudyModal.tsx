@@ -173,14 +173,14 @@ const StudyModal = ({
                     <p className="text-xs font-bold uppercase tracking-widest text-[#002147] opacity-50">Loading Document...</p>
                   </div>
                 ) : (
-                  <DocViewer
-                    key={fileUrl}
-                    documents={docs}
-                    pluginRenderers={DocViewerRenderers}
-                    className="h-[500px] w-full"
-                    config={{ header: { disableHeader: true } }}
-                    theme={{ primary: "#002147", textPrimary: "#002147" }}
-                  />
+                  <div>
+                    <iframe
+                      src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                        fileUrl
+                      )}&embedded=true`}
+                      className="w-full h-[500px] border-none"
+                    />
+                  </div>
                 )}
               </div>
             </div>

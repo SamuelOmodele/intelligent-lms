@@ -161,12 +161,13 @@ export default function InstructorCourseClassroom() {
                 )}
             </div>
 
+            {openStudyModal && 
             <StudyModal 
                 openModal={openStudyModal} 
                 setOpenModal={setOpenStudyModal} 
                 activeCourse={courseData} 
                 activeLesson={activeLesson} 
-            />
+            />}
         </div>
     );
 }
